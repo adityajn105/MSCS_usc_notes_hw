@@ -1,6 +1,6 @@
 from queue import deque
 
-inp = open("case5/input.txt", "r")
+inp = open(f"HW1-Grading_Test_Solution_Cost/input/input5.txt", "r")
 algo = inp.readline().strip()
 W,H = tuple(map(int, inp.readline().strip().split())) #width, height
 x,y = tuple(map(int, inp.readline().strip().split()[::-1])) #starting position
