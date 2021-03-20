@@ -2,12 +2,12 @@ import random
 import os
 from time import time, sleep
 
-player1 = "homework3.py"
-player2 = "modified_hw3.py"
-timep1 = timep2 = max(30, random.random() * 100) #time will be between 20 and 100 seconds
+player1 = "harshita.py"
+player2 = "aditi.py"
+timep1 = timep2 = max(100, random.random() * 150) #time will be between 100 and 150 seconds
 pieces1 = pieces2 = 12
 
-PAUSE = 0.2
+PAUSE = 1
 
 board = [
     [".","b",".","b",".","b",".","b"],
@@ -40,12 +40,17 @@ def verifyMove(typ, start, end, board):
 if random.random() > 0.5:
     player2, player1 = player1, player2
     timep1, timep2 = timep2, timep1   
-    pieces1, pieces2 = pieces2, pieces1 
+    pieces1, pieces2 = pieces2, pieces1
 
-white = True
+white = False
+print( f"Each player has {timep1:.2f} seconds to defeat other player.")
 print( f"{player1} has won the toss and is playing white." )
+if os.path.exists('playdata.txt'): os.remove('playdata.txt');
 
+game_states = dict()
+p1_last = p2_last = ""
 while True:
+    board_str = "\n".join(["".join(line) for line in board])
     with open("host/input.txt", "w") as fp:
         print("GAME", file=fp)
         if white: 
@@ -54,29 +59,47 @@ while True:
         else: 
             print("BLACK", file=fp)
             print(f"{timep2:.2f}", file=fp)
-        print("\n".join(["".join(line) for line in board]), file=fp)
+        print(board_str, file=fp)
+        game_states[board_str] = game_states.get(board_str,0)+1
+
+    if game_states[board_str] > 3:
+        print(f"Game state repeated more than 3 times!! \
+{player1 if timep1>timep2 else player2} won by {abs(timep1-timep2):.4f} secs.")
+        with open("stats.csv", 'a') as fp: print(f"{player1 if timep1>timep2 else player2},Repeat", file=fp)
+        exit()
 
     if timep1 < 0 or timep2 < 0:
-        if timep1 < 0: print(f"Time up, {player2} won.") 
-        else: print(f"Time up, {player1} won")
+        if timep1 < 0: print(f"Time up, {player2} won by {timep2:.4f} secs.") 
+        else: print(f"Time up, {player1} won by {timep1:.4f} secs.")
+        with open("stats.csv", 'a') as fp: print(f"{player1 if timep1>timep2 else player2},Timeout", file=fp)
         exit()
+    
     if pieces2 == 0 or pieces1 == 0:
         if pieces1 == 0: print(f"Game Finished!! {player2} won.")
         else: print(f"Game Finished!! {player1} won.")
+        with open("stats.csv", 'a') as fp: print(f"{player1 if pieces2==0 else player2},Victory", file=fp)
         exit() 
 
     sleep(PAUSE)
-    start = time()
     if white:
-        os.system(f"python {player1}")
+        start = time()
+        os.system(f"python {player1} host/input.txt  host/output.txt")
         timep1 = timep1 - (time()-start)
     else:
-        os.system(f"python {player2}")
+        start = time()
+        os.system(f"python {player2} host/input.txt  host/output.txt")
         timep2 = timep2 - (time()-start)
     
     with open("host/output.txt", "r") as fp:
-        king = False
-        for line in fp.readlines():
+        output = fp.readlines()
+        if white:
+                if p1_last == "".join(output): print(f'Stalemate - No Moves left!! {player2} wins'); exit()
+                else: p1_last = "".join(output)
+        else:
+                if p2_last == "".join(output): print(f'Stalemate - No Moves left!! {player1} wins'); exit()
+                else: p2_last = "".join(output)
+
+        for line in output:
             typ, start, end = tuple(line.split())
             x1, y1 = int(start[1])-1, column_map[ start[0] ]
             x2, y2 = int(end[1])-1, column_map[ end[0] ]

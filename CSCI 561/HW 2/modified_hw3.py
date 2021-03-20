@@ -1,9 +1,8 @@
-import pdb
-from collections import deque
-from time import time
 import random
+import os
+import sys
 
-inp = open("host/input.txt", "r")
+inp = open(sys.argv[1], "r")
 single = inp.readline().strip() == 'SINGLE'
 white = inp.readline().strip() == 'WHITE'
 remain_time = float(inp.readline().strip())
@@ -11,6 +10,7 @@ remain_time = float(inp.readline().strip())
 board = []
 for i in range(8):
     board.append( inp.readline().strip() )
+inp.close()
 
 max_positions = {}
 min_positions = {}
@@ -25,18 +25,15 @@ for i in range(8):
         elif c=='B': min_positions[ (y,x) ] = 1
         else: continue
 
-if not white:
-    min_positions, max_positions = max_positions, min_positions
+if not white: min_positions, max_positions = max_positions, min_positions
+piece_cnt = len(max_positions)+len(min_positions)
 
-CUTTOFF_THRESHOLD = 9
-if len(min_positions)+len(max_positions) < 10:
-    CUTTOFF_THRESHOLD -= 2
-
+CUTTOFF_THRESHOLD = 8
 
 OPT_ACTION  = None
 
 def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
-    moves = deque()
+    moves = []
     kill = False
     
     start = maxs.items()
@@ -53,7 +50,7 @@ def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
             elif (ny, nx) in mins:
                 if (ny+r) not in (-1, 8) and (nx+c) not in (-1, 8) and \
                     ( (ny+r), (nx+c) ) not in maxs and ( (ny+r), (nx+c) ) not in mins:
-                    moves.appendleft( ((y,x), (ny+r, nx+c), True) )
+                    moves.append( ((y,x), (ny+r, nx+c), True) )
                     kill = True
                 else: continue
             else: moves.append( ( (y,x), (ny, nx), False) )
@@ -66,26 +63,28 @@ def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
 euclidean = lambda x1, y1, x2, y2:  ((x1-x2)**2+(y1-y2)**2)**0.5
 
 def evaluate( maxs, mins ):
-    global white;
-    my_pieces, adv_pieces = len(maxs), len(mins)
-    my_kings, adv_kings = sum(maxs.values()), sum(mins.values())
-    value = random.random()/4 # introducting some randomness to make game less deterministic (0 to 0.25)
+    global white, DETERMINISTIC;
+    # my_pieces, adv_pieces = len(maxs), len(mins)
+    # my_kings, adv_kings = sum(maxs.values()), sum(mins.values())
+    value = random.random()/4 # introducing some randomness to make game less deterministic (0 to 0.25)
 
-    ## kings are worth 5 points and normal pieces are worth 3 points
+    ## kings are worth 10 points and normal pieces are worth 7 points
     ## normal points worth more points as they move towards opposite end
-    ## each piece ranges from 3 to 5
+    ## each piece ranges from 7 to 10
     for (x, _), k in maxs.items():
-        if k == 1: value += 5
+        if k == 1: value += 10
         else:
-            if white: value += (3 + (x/3.5))
-            else: value += (3 + ((7-x)/3.5))
+            if white: value += (7 + (x/3.5))
+            else: value += (7 + ((7-x)/3.5))
     for (x, _), k in mins.items():
-        if k == 1: value -= 5
+        if k == 1: value -= 10
         else:
-            if not white: value -= (3 + (x/3.5))
-            else: value -= (3 + ((7-x)/3.5))
-
-    # #Check distance of our kings from opponent kings pieces (move away in case of danger)
+            if not white: value -= (7 + (x/3.5))
+            else: value -= (7 + ((7-x)/3.5))
+            
+    # for _, k in maxs.items(): value += (3 + 2*k)
+    # for _, k in mins.items(): value -= (3 + 2*k)
+    #Check distance of our kings from opponent kings pieces (move away in case of danger)
     # if my_pieces+adv_pieces < 8:
     #     for (x1, y1), k1 in maxs.items():
     #         if k1==0: continue
@@ -103,7 +102,7 @@ def evaluate( maxs, mins ):
     #             else:
     #                 value += euclidean( x1, y1, x2, y2 )/3.5
 
-    return value
+    return value #+ 5*no_of_max_kings + 3*no_of_max_pieces - 5*no_of_min_kings - 3*no_of_min_pieces
 
 def getNewPositions( maxs, mins, old_p, new_p, kill, white_chance ):
     new_maxs, new_mins = maxs.copy(), mins.copy()
@@ -116,15 +115,12 @@ def getNewPositions( maxs, mins, old_p, new_p, kill, white_chance ):
     elif new_p[0] == 0 and new_maxs[new_p] == 0 and not white_chance: 
         new_maxs[new_p], king = 1, True
     else: pass
-    
     return new_maxs, new_mins, king
 
 def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kill = None):
-    global OPT_ACTION
-    if depth >= CUTTOFF_THRESHOLD: 
-        val = evaluate( maxs, mins );#print("Max", val)
-        return val #we see value of board for us
+    if depth >= CUTTOFF_THRESHOLD: return evaluate( maxs, mins ); #we see value of board for us
     v = float('-inf')
+    global OPT_ACTION
     
     moves = []
     if restrict_src_for_kill != None:
@@ -132,32 +128,27 @@ def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
                             restrict_src=[ (restrict_src_for_kill, maxs[restrict_src_for_kill]) ])
         if not kill: return min_value(mins, maxs, alpha, beta, depth, not white_chance)
     else: moves, kill = possible_moves(maxs, mins, white_chance)
-
+    if len(moves)==0: return evaluate( maxs, mins )
+    
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
         if kill and not king:
             nv = max_value( new_maxs, new_mins, alpha, beta, depth+1, white_chance, restrict_src_for_kill=new_p)
             if nv > v:
-                if depth == 0: 
-                    OPT_ACTION = (old_p, new_p)
+                if depth == 0: OPT_ACTION = (old_p, new_p)
                 v = nv
         else:
-            nv = max( v,  min_value(new_mins, new_maxs, alpha, beta, depth+1, not white_chance))
+            nv = min_value(new_mins, new_maxs, alpha, beta, depth+1, not white_chance)
             if nv > v:
-                if depth == 0: 
-                    OPT_ACTION = (old_p, new_p)
+                if depth == 0: OPT_ACTION = (old_p, new_p)
                 v = nv
                   
         if v >= beta: return v
         alpha = max( alpha, v  )
-    if depth==0 and OPT_ACTION == None and len(moves)!=0: OPT_ACTION = random.choice( [ (move[0], move[1]) for move in moves] )
     return v
 
 def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kill = None):
-    #pdb.set_trace()
-    if depth >= CUTTOFF_THRESHOLD: 
-        val = evaluate( mins, maxs );#print("Min", val)
-        return val #we see value of board for us
+    if depth >= CUTTOFF_THRESHOLD: return evaluate( mins, maxs ); #we see value of board for us
     v = float('inf')
 
     moves = []
@@ -166,6 +157,7 @@ def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
                             restrict_src=[ (restrict_src_for_kill, maxs[restrict_src_for_kill]) ])
         if not kill: return max_value(mins, maxs, alpha, beta, depth, not white_chance)
     else: moves, kill = possible_moves(maxs, mins, white_chance)
+    if len(moves)==0: return evaluate(mins, maxs)
 
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
@@ -179,15 +171,11 @@ def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
 
 #print( min_positions, possible_moves(max_positions, min_positions, True) )
 #print(evaluate(max_positions, min_positions))
-start = time()
+#start = time()
 v = max_value( max_positions, min_positions, float('-inf'), float('inf'), 0, white )
 
-fp = open('host/output.txt', 'w')
+fp = open(sys.argv[2], 'w')
 column_map = { 0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h" }
-
-if OPT_ACTION == None:
-    print( "NA", file=fp)
-    exit()
 
 (x1, y1), (x2, y2) = OPT_ACTION
 
@@ -195,7 +183,6 @@ if abs(x1-x2) > 1:
     CUTTOFF_THRESHOLD = 4
     moves_list = []
     while abs(x1-x2) > 1:
-        print( f"{v} {OPT_ACTION} {time()-start}" )
         moves_list.append(f"J {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}")    
         max_positions, min_positions, king = getNewPositions( max_positions, min_positions, (x1, y1), (x2, y2), True, white )
         if king: break
@@ -205,6 +192,16 @@ if abs(x1-x2) > 1:
         (x1, y1), (x2, y2) = OPT_ACTION
     print( "\n".join(moves_list), file=fp)
 else:
-    print( f"{v} {OPT_ACTION} {time()-start}" )
     print(f"E {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}", file=fp)
 fp.close()
+
+
+
+# pr.disable()
+# s = io.StringIO()
+# sortby = 'time'
+# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+# ps.print_stats()
+# x = open('stack.txt', 'a')
+# print(s.getvalue(), file=x)
+# print("\n\n\n--------------------------------\n\n\n", file=x)
