@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque, defaultdict
 import random
 import sys
 import time
@@ -26,6 +26,7 @@ for i in range(8):
 #     nodes = performance(maxs, mins, depth, True)
 #     end_time = time.time()
 #     print("NPS:", nodes / (end_time - start_time))
+
 
 max_positions = {}
 min_positions = {}
@@ -72,7 +73,7 @@ def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
 def evaluate( maxs, mins ):
     return len(maxs) - len(mins)
 
-CUTTOFF_THRESHOLD = 3
+CUTTOFF_THRESHOLD = 5
 OPT_ACTION  = None
 
 
@@ -138,8 +139,6 @@ def min_value(maxs, mins, depth, white_chance, restrict_src_for_kill = None):
     return v
 
 v = max_value( max_positions, min_positions, 0, white )
-
-#get_nps(max_positions, min_positions, 5)
 
 fp = open(sys.argv[2], 'w')
 column_map = { 0:"a", 1:"b", 2:"c", 3:"d", 4:"e", 5:"f", 6:"g", 7:"h" }

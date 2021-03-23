@@ -1,4 +1,4 @@
-from random import shuffle
+from random import random
 import sys
 
 inp = open(sys.argv[1], "r")
@@ -28,11 +28,15 @@ if not white: min_positions, max_positions = max_positions, min_positions
 CUTTOFF_THRESHOLD = 6
 OPT_ACTION  = None
 
-if not single: CUTTOFF_THRESHOLD = 9
-
+if not single:
+    if remain_time < 30: CUTTOFF_THRESHOLD = 7
+    else:
+        pieces = len(max_positions)+len(min_positions)
+        CUTTOFF_THRESHOLD =  (9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5)[pieces]
+    
 def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
-    moves = set()
-    start, kill = restrict_src, True if restrict_src else maxs.items(), False
+    moves = list()
+    start, kill = (restrict_src, True) if restrict_src else (maxs.items(), False)
     for (y, x), typ1 in start:
         for r,c in ( (1,1), (1, -1), (-1, -1), (-1, 1)  ):
             if white_chance and not typ1 and r == -1: continue
@@ -45,26 +49,16 @@ def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
                 if new_p[0] not in (-1, 8) and new_p[1] not in (-1, 8) and \
                     new_p not in maxs and new_p not in mins:
                     if not kill: moves.clear(); kill = True
-                    moves.add( ((y,x), (ny+r, nx+c), True) )
+                    moves.append( ((y,x), new_p, True) )
                 continue
-            elif not kill: moves.add( ( (y,x), (ny, nx), False) )
+            elif not kill: moves.append( ( (y,x), (ny, nx), False) )
             else: continue
     return moves, kill and len(moves) > 0
 
-def evaluate( maxs, mins):
-    value  = 0
-    # for (x, _), k in maxs.items():
-    #     if k == 1: value += 10
-    #     else:
-    #         if white: value += (7 + (x/3.5))
-    #         else: value += (7 + ((7-x)/3.5))
-    # for (x, _), k in mins.items():
-    #     if k == 1: value -= 10
-    #     else:
-    #         if not white: value -= (7 + (x/3.5))
-    #         else: value -= (7 + ((7-x)/3.5))
-    for _, k in maxs.items(): value += (3 + 2*k)
-    for _, k in mins.items(): value -= (3 + 2*k)
+def evaluate(maxs, mins):
+    value  = random()/5
+    for _, k in maxs.items(): value += (7 + 3*k)
+    for _, k in mins.items(): value -= (7 + 3*k)
     return value
     
 def getNewPositions( maxs, mins, old_p, new_p, kill, white_chance ):
@@ -80,13 +74,12 @@ def getNewPositions( maxs, mins, old_p, new_p, kill, white_chance ):
     else: pass
     return new_maxs, new_mins, king
 
-
 def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kill = None):
     if depth >= CUTTOFF_THRESHOLD: return evaluate( maxs, mins )
     v = float('-inf')
     global OPT_ACTION; 
     
-    moves = []
+    moves = None
     if restrict_src_for_kill:
         moves, kill =  possible_moves(maxs, mins, white_chance, 
                             restrict_src=[ (restrict_src_for_kill, maxs[restrict_src_for_kill]) ])
@@ -97,16 +90,14 @@ def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
         if kill and not king:
-            nv = max_value( new_maxs, new_mins, alpha, beta, depth+1, white_chance, restrict_src_for_kill=new_p)
+            nv = max_value(new_maxs, new_mins, alpha, beta, depth+1, white_chance, restrict_src_for_kill=new_p)
             if nv > v:
-                if depth == 0: 
-                    OPT_ACTION = (old_p, new_p)
+                if not depth: OPT_ACTION = (old_p, new_p)
                 v = nv
         else:
             nv = min_value(new_mins, new_maxs, alpha, beta, depth+1, not white_chance)
             if nv > v:
-                if depth == 0: 
-                    OPT_ACTION = (old_p, new_p)
+                if not depth: OPT_ACTION = (old_p, new_p)
                 v = nv
 
         if v >= beta: return v
@@ -114,16 +105,17 @@ def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
     return v
 
 def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kill = None):
-    if depth >= CUTTOFF_THRESHOLD: return evaluate( mins, maxs ) #we see value of board for us
+    if depth >= CUTTOFF_THRESHOLD: return evaluate( mins, maxs )
     v = float('inf')
 
-    moves = []
+    moves = None
     if restrict_src_for_kill:
         moves, kill = possible_moves(maxs, mins, white_chance,
                             restrict_src=[ (restrict_src_for_kill, maxs[restrict_src_for_kill]) ])
         if not kill: return max_value(mins, maxs, alpha, beta, depth, not white_chance)
     else: moves, kill = possible_moves(maxs, mins, white_chance)
     if not moves: return evaluate(mins, maxs)
+
 
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
@@ -152,7 +144,7 @@ if abs(x1-x2) > 1:
         max_value(max_positions, min_positions, float('-inf'), float('inf'), 0, white, restrict_src_for_kill=(x2, y2) )
         if OPT_ACTION == None: break
         (x1, y1), (x2, y2) = OPT_ACTION
-    print( "\n".join(moves_list), file=fp)
+    print( "\n".join(moves_list), file=fp, end="")
 else:
-    print(f"E {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}", file=fp)
+    print(f"E {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}", file=fp, end="")
 fp.close()

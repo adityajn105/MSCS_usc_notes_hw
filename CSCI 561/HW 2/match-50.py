@@ -3,9 +3,8 @@ import random
 import os
 from time import time
 
-player1 = "aditi.py"
-player2 = "homework3.py"
-
+player1 = "homework3.py"
+player2 = "mini_max.py"
 
 def run_game(args):
     num, player1, player2 = args
@@ -15,7 +14,7 @@ def run_game(args):
     timep1 = timep2 = 150  # time will be between 100 and 150 seconds
     pieces1 = pieces2 = 12
 
-    # toss
+    #toss
     if random.random() > 0.5:
         player2, player1 = player1, player2
         timep1, timep2 = timep2, timep1
@@ -65,9 +64,9 @@ def run_game(args):
                     print("BLACK", file=fp)
                     print(f"{timep2:.2f}", file=fp)
                 print(board_str, file=fp)
-                game_states[hash(board_str)] = game_states.get(hash(board_str), 0) + 1
+                game_states[board_str] = game_states.get(board_str, 0) + 1
 
-            if game_states[hash(board_str)] > 3:
+            if game_states[board_str] > 3:
                 print(f"Game state repeated more than 3 times!! \
         {player1 if timep1 > timep2 else player2} won by {abs(timep1 - timep2):.4f} secs.")
                 with open("stats-match.csv", 'a') as fp: print(f"{player1 if timep1 > timep2 else player2},Repeat",
@@ -125,7 +124,12 @@ def run_game(args):
 
                     if not verifyMove(typ, (x1, y1), (x2, y2), board):
                         print('Invalid Move!!')
-                        winner = not white
+                        if white: 
+                            print(f'Stalemate - No Moves left!! {player2} wins'); 
+                            with open("stats-match.csv", 'a') as fp: print(f"{player2},Stalemate",file=fp)
+                        else: 
+                            print(f'Stalemate - No Moves left!! {player1} wins'); 
+                            with open("stats-match.csv", 'a') as fp: print(f"{player1},Stalemate",file=fp)
                         raise EOFError()
 
                     if x2 == 7 or x2 == 0:
@@ -153,7 +157,7 @@ if __name__ == '__main__':
         pairs.append((i, player1, player2))
         # break
     try:
-        with Pool(processes=8) as pool:
+        with Pool(processes=6) as pool:
             done = 0
             for _ in pool.imap_unordered(run_game, pairs):
                 done += 1

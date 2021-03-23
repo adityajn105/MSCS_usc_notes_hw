@@ -2,12 +2,13 @@ import random
 import os
 from time import time, sleep
 
-player1 = "harshita.py"
-player2 = "aditi.py"
+player1 = "devanshi.py"
+player2 = "harshita.py"
+
 timep1 = timep2 = max(100, random.random() * 150) #time will be between 100 and 150 seconds
 pieces1 = pieces2 = 12
 
-PAUSE = 1
+PAUSE = 0.3
 
 board = [
     [".","b",".","b",".","b",".","b"],
@@ -106,7 +107,7 @@ while True:
             x1, x2 = 7-x1, 7-x2
 
             if not verifyMove(typ, (x1, y1), (x2, y2), board):
-                print('Invalid Move!!')
+                print(f'Invalid Move!! {player1 if white else player2} have made an invalid move.')
                 exit()
 
             if x2==7 or x2==0:

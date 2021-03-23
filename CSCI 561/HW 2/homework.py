@@ -1,10 +1,38 @@
 from random import random
-from time import process_time as time
 
-max_positions = {(2, 0): True, (2, 2): True, (2, 4): True, (2, 6): True, (1, 1): True, (1, 3): True, (1, 5): True, (1, 7): True} 
-min_positions = {(6, 0): True, (6, 2): True, (6, 4): True, (6, 6): True, (4, 0): True, (4, 2): True, (4, 4): True, (4, 6): True}
-white = True
+inp = open("input.txt", "r")
+single = inp.readline().strip() == 'SINGLE'
+white = inp.readline().strip() == 'WHITE'
+remain_time = float(inp.readline().strip())
+board = []
+for i in range(8):
+    board.append( inp.readline().lstrip() )
+inp.close()
 
+max_positions = {}
+min_positions = {}
+for i in range(8):
+    y = 7-i
+    for x in range(8):
+        c = board[i][x] 
+        if c == '.': continue
+        elif c=='w': max_positions[ (y,x) ] = False
+        elif c=='W': max_positions[ (y,x) ] = True
+        elif c=='b': min_positions[ (y,x) ] = False
+        elif c=='B': min_positions[ (y,x) ] = True
+        else: continue
+
+if not white: min_positions, max_positions = max_positions, min_positions
+
+CUTTOFF_THRESHOLD = 6
+OPT_ACTION  = None
+
+if not single:
+    if remain_time < 30: CUTTOFF_THRESHOLD = 7
+    else: 
+        pieces = len(max_positions)+len(min_positions)
+        CUTTOFF_THRESHOLD =  (9, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5)[pieces]
+    
 def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
     moves = list()
     start, kill = (restrict_src, True) if restrict_src else (maxs.items(), False)
@@ -61,7 +89,7 @@ def max_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
         if kill and not king:
-            nv = max_value( new_maxs, new_mins, alpha, beta, depth+1, white_chance, restrict_src_for_kill=new_p)
+            nv = max_value(new_maxs, new_mins, alpha, beta, depth+1, white_chance, restrict_src_for_kill=new_p)
             if nv > v:
                 if not depth: OPT_ACTION = (old_p, new_p)
                 v = nv
@@ -87,6 +115,7 @@ def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
     else: moves, kill = possible_moves(maxs, mins, white_chance)
     if not moves: return evaluate(mins, maxs)
 
+    
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, king = getNewPositions( maxs, mins, old_p, new_p, kill, white_chance )
         if kill and not king:
@@ -97,18 +126,24 @@ def min_value(maxs, mins, alpha, beta, depth, white_chance, restrict_src_for_kil
         beta = min( beta, v  )
     return v
 
-time_elapsed = 0
-for depth in range(1, 11):
-    CUTTOFF_THRESHOLD = depth
-    start = time()
-    max_value( max_positions, min_positions, float('-inf'), float('inf'), 0, white )
-    print(depth, time()-start)
-    time_elapsed += (time()-start)
-print(time_elapsed)
-with open("calibration.txt", "w") as fp:
-    print(time_elapsed, file=fp, end="")
+max_value( max_positions, min_positions, float('-inf'), float('inf'), 0, white )
 
-# calibrate_time = 0
-# try: 
-#     with open('calibration.txt', 'r') as fp: calibrate_time = float(fp.readline())
-# except: passtime
+fp = open("output.txt", 'w')
+column_map = ["a", "b", "c", "d", "e", "f", "g", "h"]
+(x1, y1), (x2, y2) = OPT_ACTION
+
+if abs(x1-x2) > 1:
+    CUTTOFF_THRESHOLD = 4
+    moves_list = []
+    while abs(x1-x2) > 1:
+        moves_list.append(f"J {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}")    
+        max_positions, min_positions, king = getNewPositions( max_positions, min_positions, (x1, y1), (x2, y2), True, white )
+        if king: break
+        OPT_ACTION  = None
+        max_value(max_positions, min_positions, float('-inf'), float('inf'), 0, white, restrict_src_for_kill=(x2, y2) )
+        if OPT_ACTION == None: break
+        (x1, y1), (x2, y2) = OPT_ACTION
+    print( "\n".join(moves_list), file=fp, end="")
+else:
+    print(f"E {column_map[y1]}{x1+1} {column_map[y2]}{x2+1}", file=fp, end="")
+fp.close()

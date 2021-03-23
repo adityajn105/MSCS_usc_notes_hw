@@ -1,5 +1,5 @@
-from random import shuffle
 from time import time
+import os
 
 inp = open("host/test.txt", "r")
 single = inp.readline().strip() == 'SINGLE'
@@ -15,7 +15,7 @@ min_positions = {}
 for i in range(8):
     y = 7-i
     for x in range(8):
-        c = board[i][x] 
+        c = board[i][x]
         if c == '.': continue
         elif c=='w': max_positions[ (y,x) ] = False
         elif c=='W': max_positions[ (y,x) ] = True
@@ -24,7 +24,7 @@ for i in range(8):
         else: continue
 
 def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
-    moves = set()
+    moves = list()
     start, kill = (restrict_src, True) if restrict_src else (maxs.items(), False)
     for (y, x), typ1 in start:
         for r,c in ( (1,1), (1, -1), (-1, -1), (-1, 1)  ):
@@ -38,9 +38,9 @@ def possible_moves( maxs, mins, white_chance = True, restrict_src = None ):
                 if new_p[0] not in (-1, 8) and new_p[1] not in (-1, 8) and \
                     new_p not in maxs and new_p not in mins:
                     if not kill: moves.clear(); kill = True
-                    moves.add( ((y,x), (ny+r, nx+c), True) )
+                    moves.append( ((y,x), new_p, True) )
                 continue
-            elif not kill: moves.add( ( (y,x), (ny, nx), False) )
+            elif not kill: moves.append( ( (y,x), (ny, nx), False) )
             else: continue
     return moves, kill and len(moves) > 0
 
@@ -63,7 +63,7 @@ def performance(maxs, mins, depth, white):
     moves, _ = possible_moves(maxs, mins)
     for old_p, new_p, kill in moves:
         new_maxs, new_mins, _ = getNewPositions( maxs, mins, old_p, new_p, kill, white)
-        nodes += performance(new_maxs, new_mins, depth-1, not white)
+        nodes += performance(new_maxs, new_mins, depth-1, white)
     return nodes
 
 def get_nps(maxs, mins, depth=5):
@@ -73,7 +73,6 @@ def get_nps(maxs, mins, depth=5):
     return nodes / (end_time - start_time)
     
 mn = 0 
-for _ in range(10):
+for _ in range(1):
     mn += get_nps( max_positions, min_positions )
-
-print("NPS :", mn/10)
+print("NPS :", mn)
