@@ -1,7 +1,7 @@
 import re
 from copy import copy, deepcopy
 import pdb
-from collections import defaultdict
+from queue import deque
 
 unpacker = re.compile("(~)?(.*)\((.*)\)")
 class Predicate():
@@ -47,12 +47,12 @@ fp = open("cases/input4.txt", 'r')
 n_queries = int(fp.readline().strip())
 queries = []
 for _ in range(n_queries):
-    queries.append( unpackPredicate( fp.readline().strip() ) )
+    queries.append( unpackPredicate( fp.readline().replace(" ","").strip() ) )
 
 n_kb = int( fp.readline().strip() )
 kb_cnf = []
 for _ in range(n_kb):
-    for cnf in convert_to_cnf(fp.readline().strip()):
+    for cnf in convert_to_cnf(fp.readline().replace(" ","").strip()):
         kb_cnf.append(cnf)
 fp.close()
 
@@ -75,7 +75,7 @@ def checkContradiction( query, literals ):
 
 def unify_var(var, x, subs):
     if var in subs and isValue( subs[var] ): return unify( subs[var], x, subs )
-    elif x in subs and isValue( subs[var] ): return unify( var, subs[var], subs )
+    elif x in subs and isValue( subs[x] ): return unify( var, subs[x], subs )
     else: subs[var] = x; return subs
 
 def unify(x, y, subs=dict()):
@@ -116,65 +116,28 @@ def infer( sentence, query, subs=dict() ):
         new_query = removePredicateAtIndex(query, j)
         resolve_sentences = infer( new_sentence, new_query, subs )
         new_sentences.extend(resolve_sentences)
-
-        #for resolve_sentence in resolve_sentences:
-            # new_s = []
-            # for pred in resolve_sentence:
-            #     pred.apply_subs( sub1 )
-            #     new_s.append(pred)
-            # new_sentences.append(new_s)
     return new_sentences
 
-
 def resolve( query, kb ):
-    #pdb.set_trace()
-    #infered = False
-    for sentence  in kb:
-        for new_s in infer(sentence, query):
-            if new_s == query: continue
-            if len(new_s) == 0: return False
-            if len(new_s) == len(query) + len(sentence): continue
-            #infered = True
-            if not resolve( new_s, kb ):
-                return False
+    dq = deque( [query] )
+    seen = {query}
+    while len(dq) > 0:
+        query = dq.popleft()
+        #print(query, len(dq), len(seen))
+        for sentence in kb:
+            for new_s in infer(sentence, query):
+                if new_s == query: continue
+                if len(new_s) == 0: return False
+                if len(new_s) == len(query) + len(sentence): continue
+                if new_s not in seen:
+                    dq.append( new_s )
+                    seen.add(new_s)
     return True
-    
-    # for sentences in infer(  ):
-    #     new_sentence = unify( sentence, query )
-    #     if not new_sentence: continue
-    #     kb[new_sentence], kb[sentence] = False, True
-         
-    
-
-# query = "Vaccinated(Hayley)"
-# print(checkContradiction( query, list( filter( lambda x: len(x)==1, kb_cnf.keys() ) ) ))
-
-
-#
-# p1 = unpackPredicate('Play(Haley, x)')
-# p2 = unpackPredicate('~Play(y, John)')
-#temp = unify( p1, p2 )
-
-# p1 = [ unpackPredicate(x) for x in ("~Ready(Hayley)", "~Ready(Teddy)") ]
-# p2 = [ unpackPredicate(x) for x in ("~Start(x)", '~Healthy(x)', "Ready(x)") ]
-
-# #p1 = [ unpackPredicate(x) for x in ("Play(Haley, Mike)",) ]
-# #p2 = [ unpackPredicate(x) for x in ("~Play(Haley, Mike)",) ]
-
-# temp = infer( p1, p2, dict() )
-# for sentence in temp:
-#     print(sentence)
-
-
-#print( resolve( (unpackPredicate("~Vaccinated(Teddy)"),), kb_cnf ) )
 
 for query in queries:
     new_kb_cnf = kb_cnf.copy()
     query.neg = not query.neg
     new_kb_cnf.append( (query,) )
-    #print(new_kb_cnf)
 
-    if resolve( (query,), new_kb_cnf ): 
-        print('FALSE')
-    else: 
-        print('TRUE')
+    if resolve( (query,), new_kb_cnf ):  print('FALSE')
+    else: print('TRUE')
