@@ -6,13 +6,19 @@ def unpackPredicate( predicate ):
     neg = len(re.findall( "(~{1}).*", predicate )) > 0
     return variables.split(','), name, neg
 
-fp = open("cases/input5.txt", 'r')
+fp = open("cases/input4.txt", 'r')
 n_queries = int(fp.readline().strip())
 queries = []
 for _ in range(n_queries):
     queries.append( fp.readline().strip() )
 n_kb = int( fp.readline().strip() )
-raw_kb = []
+raw_kb = []if new_s == query: continue
+                if len(new_s) == 0: return False
+                if areSame( sentence, query, new_s ): continue
+                if new_s not in seen:
+                    dq.append( new_s )
+                    seen.add(new_s)
+    return True
 for _ in range(n_kb):
     sentence = fp.readline().strip()
     if "=>" in sentence: raw_kb.append(sentence)
