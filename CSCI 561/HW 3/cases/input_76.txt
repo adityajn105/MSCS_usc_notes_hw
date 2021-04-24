@@ -1,0 +1,4 @@
+1
+P(Tim,Bob)
+1
+P(x,y) => P(y,x)

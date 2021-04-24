@@ -1,0 +1,4 @@
+1
+Z(Bolo,Colo)
+1
+~P(x,y) => Z(x,y)

@@ -1,0 +1,7 @@
+1
+R(Bob)
+4
+A(x) & B(x)=> One(x)
+~A(x) & ~B(x) => Two(x)
+One(x) => R(x)
+Two(x) => R(x)

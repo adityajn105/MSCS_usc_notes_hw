@@ -1,4 +1,4 @@
-import re, pdb, queue
+import re, queue
 from copy import copy
 
 unpacker = re.compile("(~)?(.*)\((.*)\)")
@@ -11,14 +11,14 @@ class Predicate():
     def __hash__(self): return hash(str(self))
     def apply_subs(self, subs): self.vars = [subs.get(var, var) for var in self.vars]
     def __eq__(self, p): return self.name == p.name and self.vars == p.vars and self.neg == p.neg
-    def isUnifiable( self, p ): return self.name==p.name and self.neg != p.neg
+    def isUnifiable(self, p): return self.name==p.name and self.neg != p.neg
     def __lt__(self, p): return str(self) < str(p)
 
 def unpackPredicate( predicate ):
     result = unpacker.match( predicate )
     neg, name, variables = result.groups()
     variables = [var.strip() for var in variables.split(',')]
-    return Predicate( name, variables, neg=='~')
+    return Predicate(name, variables, neg=='~')
 
 def convert_to_cnf(sentence):
     cnfs = []
@@ -30,18 +30,16 @@ def convert_to_cnf(sentence):
             prior.neg = not prior.neg
             cnf.append( prior )
         cnf.append( unpackPredicate(implication.strip()) )
-        cnfs.append( tuple(sorted(cnf)) )
-    else: cnfs.append( ( unpackPredicate(sentence.strip()), ) )
+        cnfs.append( list(sorted(cnf)) )
+    else: cnfs.append( [unpackPredicate(sentence.strip())] )
     return cnfs
 
-isVariable = lambda x: type(x) == str and len(x)==1 and x.lower() == x
-isValue = lambda x: type(x) == str and len(x) > 1 and x[0].upper() == x[0]
+isVariable = lambda x: type(x) == str and x[0].lower() == x[0]
+isValue = lambda x: type(x) == str and x[0].upper() == x[0]
 isCompound = lambda x: type(x) == Predicate
 isVarList = lambda x: type(x) == list
 
-#fp = open("cases/input_25.txt", 'r')
 fp = open("input.txt", 'r')
-
 n_queries, queries = int(fp.readline().strip()), []
 for _ in range(n_queries):
     queries.append( unpackPredicate( fp.readline().replace(" ","").strip() ) )
@@ -68,7 +66,7 @@ def unify(x, y, subs=dict()):
 def removePredicateAtIndex( sentence, index ):
     s = list(sentence)
     s.pop(index)
-    return tuple(s)
+    return s
 
 def infer( sentence, query, subs=dict() ):
     new_sentences, unified_pairs = [], []
@@ -85,12 +83,12 @@ def infer( sentence, query, subs=dict() ):
             pred = copy(pred)
             pred.apply_subs(subs)
             ans.add(pred)
-        return [ tuple(sorted(list(ans))) ]
+        return [ sorted(list(ans)) ]
 
     for i, j, subs in unified_pairs:
         new_sentence = removePredicateAtIndex(sentence, i)
         new_query = removePredicateAtIndex(query, j)
-        resolve_sentences = infer( new_sentence, new_query, subs )
+        resolve_sentences = infer(new_sentence, new_query, subs)
         new_sentences.extend(resolve_sentences)
     return new_sentences
 
@@ -101,46 +99,41 @@ def areSame( sentence, query, new_sentence ):
 
 def resolve( query, kb, threshold=10000 ):
     first = query
-    dq, seen = [query], {query}
+    dq, seen = [query], {tuple(query)}
     while len(dq) > 0 and len(seen) < threshold:
         query = dq.pop(-1)
-        query = infer(query, query)[0]
-        if len(query)==0: return True
         for sentence in kb:
             for new_s in infer(sentence, query):
                 if new_s == query: continue
                 if len(new_s) == 0: return False
                 if areSame( sentence, query, set(new_s) ): continue
-                if new_s not in seen:
+                new_s = infer(new_s, new_s)[0]
+                if len(new_s)==0: return True
+                if tuple(new_s) not in seen:
                     dq.append(new_s)
-                    seen.add(new_s)
+                    seen.add(tuple(new_s))
     if len(dq) == 0: return True
 
-    dq, seen = queue.deque([first]), {first}
+    dq, seen = queue.deque([first]), {tuple(first)}
     while len(dq) > 0 and len(seen) < threshold:
         query = dq.popleft()
-        query = infer(query, query)[0]
-        if len(query)==0: return True
         for sentence in kb:
             for new_s in infer(sentence, query):
                 if new_s == query: continue
                 if len(new_s) == 0: return False
-                if areSame( sentence, query, set(new_s) ): continue
-                if new_s not in seen:
+                if areSame(sentence, query, set(new_s)): continue
+                new_s = infer(new_s, new_s)[0]
+                if len(new_s)==0: return True
+                if tuple(new_s) not in seen:
                     dq.append(new_s)
-                    seen.add(new_s)
+                    seen.add(tuple(new_s))
     return True
 
-
-# sent1 = [unpackPredicate(pred) for pred in ("Knows(John, x)",)]
-# sent2 = [unpackPredicate(pred) for pred in ("~Knows(x,Elizabeth)",) ]
-
-# print( infer( sent1, sent2 ) )
 out = open("output.txt", "w")
 for query in queries:
     new_kb_cnf = kb_cnf.copy()
     query.neg = not query.neg
-    new_kb_cnf.append( (query,) )
-    if resolve( (query,), new_kb_cnf ):  print('FALSE', file=out)
+    new_kb_cnf.append( [query] )
+    if resolve( [query], new_kb_cnf ):  print('FALSE', file=out)
     else: print('TRUE', file=out)
 out.close()

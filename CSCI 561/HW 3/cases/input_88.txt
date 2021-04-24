@@ -1,0 +1,7 @@
+1
+R(Bob)
+4
+A(x) & B(x) & C(x) => One(x)
+~A(x) & ~B(x) & ~C(x)  => ThirtyTwo(x)
+One(x) => R(x)
+ThirtyTwo(x) => R(x)

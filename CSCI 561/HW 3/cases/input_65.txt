@@ -1,0 +1,7 @@
+1
+Older(Lulu,Fifi)
+4
+Mother(Lulu,Fifi)
+Alive(Lulu)
+Mother(x,y) => Parent(x,y)
+Parent(x,y) & Alive(x) => Older(x,y)

@@ -1,0 +1,7 @@
+1
+Z(Bolo,Colo)
+2
+~P(x,y) => Z(x,y)
+P(x,y) => T(y,x)
+M(x,y) => Z(y,x)
+W(y,x)

@@ -1,0 +1,15 @@
+3
+Uncle(John,Sarah)
+Sibling(John,Sarah)
+Sibling(John,Neelu)
+10
+Male(x) & Parent(m,z) & Sibling(x,m) => Uncle(x,z)
+Father(x,y) => Parent(x,y)
+Mother(x,y) => Parent(x,y)
+Parent(x,p) & Parent(x,w) & Parent(a,b) & Parent(c,d) => Sibling(p,w)
+Male(John)
+Father(Shawn,John)
+Father(Suresh,Ramesh)
+Mother(Kill,Bill)
+Mother(Neelu,Sarah)
+Father(Shawn,Neelu)

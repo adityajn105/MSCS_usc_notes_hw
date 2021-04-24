@@ -1,0 +1,4 @@
+1
+B(John)
+1
+A(x) => B(John)

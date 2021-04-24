@@ -1,0 +1,6 @@
+1
+~Course(Algo)
+3
+Takes(x,y) => Loves(x,y)
+Loves(Bob,y)
+~Course(y) => ~Loves(x,y)

@@ -1,7 +1,7 @@
 import subprocess
 import time
 
-for i in range(1, 62):
+for i in range(1, 92):
     subprocess.run(["cp", "cases/input_" + str(i) + ".txt", "input.txt"])
     start = time.time()
     subprocess.run(["python3", "homework_resolution.py"])
