@@ -31,11 +31,6 @@ def convert_to_cnf(sentence):
             cnf.append( prior )
         cnf.append( unpackPredicate(implication.strip()) )
         cnfs.append( tuple(sorted(cnf)) )
-    elif '&' in sentence:
-        priors = sentence.split('&')
-        for prior in priors:
-            prior = unpackPredicate( prior.strip() )
-            cnfs.append( (prior,) )
     else: cnfs.append( ( unpackPredicate(sentence.strip()), ) )
     return cnfs
 
@@ -44,18 +39,7 @@ isValue = lambda x: type(x) == str and len(x) > 1 and x[0].upper() == x[0]
 isCompound = lambda x: type(x) == Predicate
 isVarList = lambda x: type(x) == list
 
-def simplify( sentence, i=0 ):
-    vars_subs = {}
-    for predicate in sentence:
-        for var in predicate.vars:
-            if isVariable(var) and var not in vars_subs:
-                vars_subs[var], i = str(i), i+1
-    for predicate in sentence: predicate.apply_subs(vars_subs)
-    sentence = sorted( list(sentence) )
-    return tuple(sentence), i
-
-# 20, 23, 24, 25
-#fp = open("cases/input_7.txt", 'r')
+#fp = open("cases/input_25.txt", 'r')
 fp = open("input.txt", 'r')
 
 n_queries, queries = int(fp.readline().strip()), []
@@ -118,8 +102,10 @@ def areSame( sentence, query, new_sentence ):
 def resolve( query, kb, threshold=10000 ):
     first = query
     dq, seen = [query], {query}
-    while len(dq) > 0 and len(dq) < threshold:
+    while len(dq) > 0 and len(seen) < threshold:
         query = dq.pop(-1)
+        query = infer(query, query)[0]
+        if len(query)==0: return True
         for sentence in kb:
             for new_s in infer(sentence, query):
                 if new_s == query: continue
@@ -131,8 +117,10 @@ def resolve( query, kb, threshold=10000 ):
     if len(dq) == 0: return True
 
     dq, seen = queue.deque([first]), {first}
-    while len(dq) > 0 and len(dq) < threshold:
+    while len(dq) > 0 and len(seen) < threshold:
         query = dq.popleft()
+        query = infer(query, query)[0]
+        if len(query)==0: return True
         for sentence in kb:
             for new_s in infer(sentence, query):
                 if new_s == query: continue
@@ -143,14 +131,11 @@ def resolve( query, kb, threshold=10000 ):
                     seen.add(new_s)
     return True
 
-# one = ( unpackPredicate("Marry(John, x)"), )
-# two = ( unpackPredicate("Marry(x, Mike)"),  )
-# i = simplify(one)
-# simplify(two, i)
-# print(infer(one, two))
 
-# print(kb_cnf)
+# sent1 = [unpackPredicate(pred) for pred in ("Knows(John, x)",)]
+# sent2 = [unpackPredicate(pred) for pred in ("~Knows(x,Elizabeth)",) ]
 
+# print( infer( sent1, sent2 ) )
 out = open("output.txt", "w")
 for query in queries:
     new_kb_cnf = kb_cnf.copy()

@@ -6,19 +6,14 @@ def unpackPredicate( predicate ):
     neg = len(re.findall( "(~{1}).*", predicate )) > 0
     return variables.split(','), name, neg
 
-fp = open("cases/input4.txt", 'r')
+fp = open("input.txt", 'r')
 n_queries = int(fp.readline().strip())
 queries = []
 for _ in range(n_queries):
     queries.append( fp.readline().strip() )
 n_kb = int( fp.readline().strip() )
-raw_kb = []if new_s == query: continue
-                if len(new_s) == 0: return False
-                if areSame( sentence, query, new_s ): continue
-                if new_s not in seen:
-                    dq.append( new_s )
-                    seen.add(new_s)
-    return True
+raw_kb = []
+
 for _ in range(n_kb):
     sentence = fp.readline().strip()
     if "=>" in sentence: raw_kb.append(sentence)
@@ -72,6 +67,9 @@ def resolve(q_var, q_name, q_neg):
     return False
 
 
+out = open("output.txt", "w")
 for query in queries:
     q_var, q_name, q_neg = unpackPredicate(query)
-    print("TRUE" if resolve(q_var, q_name, q_neg) else "FALSE")
+    print("TRUE" if resolve(q_var, q_name, q_neg) else "FALSE", file=out)
+
+out.close()

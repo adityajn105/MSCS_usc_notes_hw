@@ -1,5 +1,3 @@
-import os
-import sys
 import subprocess
 import time
 
@@ -7,6 +5,7 @@ for i in range(1, 62):
     subprocess.run(["cp", "cases/input_" + str(i) + ".txt", "input.txt"])
     start = time.time()
     subprocess.run(["python3", "homework_resolution.py"])
+    #subprocess.run(["python3", "test.py"])
     total = time.time()-start
     my_output = ''
     with open('output.txt') as ipfile:
@@ -19,5 +18,3 @@ for i in range(1, 62):
         theirs = ipfile.read()
 
     print("Test case", i, ":", my_output.strip() == theirs.strip(), "||  Time Taken ", total)
-    #break
-
