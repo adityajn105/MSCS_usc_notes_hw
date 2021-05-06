@@ -1,5 +1,6 @@
-import re, queue
+import re, queue, pdb
 from copy import copy
+import multiprocessing
 
 unpacker = re.compile("(~)?(.*)\((.*)\)")
 class Predicate():
@@ -97,36 +98,49 @@ def areSame( sentence, query, new_sentence ):
         if pred not in new_sentence: return False
     return True       
 
+def getInferences(args):
+    query, sentence = args
+    new_ss = []
+    for new_s in infer(sentence, query):
+        if new_s == query: continue
+        if len(new_s) == 0: return False
+        if areSame( sentence, query, set(new_s) ): continue
+        new_s = infer(new_s, new_s)[0]
+        if len(new_s)==0: return True
+        new_ss.append(new_s)
+    return new_ss
+
 def resolve( query, kb, threshold=10000 ):
     first = query
     dq, seen = [query], {tuple(query)}
+    pool = multiprocessing.Pool(8)
+
     while len(dq) > 0 and len(seen) < threshold:
         query = dq.pop(-1)
-        for sentence in kb:
-            for new_s in infer(sentence, query):
-                if new_s == query: continue
-                if len(new_s) == 0: return False
-                if areSame( sentence, query, set(new_s) ): continue
-                new_s = infer(new_s, new_s)[0]
-                if len(new_s)==0: return True
-                if tuple(new_s) not in seen:
-                    dq.append(new_s)
-                    seen.add(tuple(new_s))
+        arguments = []
+        for sent in kb: arguments.append( (query, sent) )
+        ans = pool.map( getInferences, arguments )
+        for v in ans:
+            if type(v) != list: return v
+            for s in v:
+                if tuple(s) in seen: continue
+                dq.append(s)
+                seen.add(tuple(s))
+
     if len(dq) == 0: return True
 
     dq, seen = queue.deque([first]), {tuple(first)}
     while len(dq) > 0 and len(seen) < threshold:
         query = dq.popleft()
-        for sentence in kb:
-            for new_s in infer(sentence, query):
-                if new_s == query: continue
-                if len(new_s) == 0: return False
-                if areSame(sentence, query, set(new_s)): continue
-                new_s = infer(new_s, new_s)[0]
-                if len(new_s)==0: return True
-                if tuple(new_s) not in seen:
-                    dq.append(new_s)
-                    seen.add(tuple(new_s))
+        arguments = []
+        for sent in kb: arguments.append( (query, sent) )
+        ans = pool.map( getInferences, arguments )
+        for v in ans:
+            if type(v) != list: return v
+            for s in v:
+                if tuple(s) in seen: continue
+                dq.append(s)
+                seen.add(tuple(s))
     return True
 
 out = open("output.txt", "w")

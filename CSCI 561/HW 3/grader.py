@@ -1,10 +1,10 @@
 import subprocess
 import time
 
-for i in range(1, 92):
+for i in range(1, 143):
     subprocess.run(["cp", "cases/input_" + str(i) + ".txt", "input.txt"])
     start = time.time()
-    subprocess.run(["python3", "homework_resolution.py"])
+    subprocess.run(["python3", "test.py"])
     #subprocess.run(["python3", "test.py"])
     total = time.time()-start
     my_output = ''

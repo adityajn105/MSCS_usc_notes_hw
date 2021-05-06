@@ -1,0 +1,10 @@
+2
+TakeVaccine(Lea,Rabies)
+TakeVaccine(Pepper,DHPP)
+6
+AgeInWeeks(x,6) => TakeVaccine(x,Distemper)
+AgeInWeeks(x,10) & ~TakeVaccine(x,Distemper) => TakeVaccine(x,DHPP)
+AgeInWeeks(x,16) => TakeVaccine(x,Rabies)
+~TakeVaccine(Pepper,Distemper)
+AgeInWeeks(Pepper,10)
+AgeInWeeks(Lea,16)
