@@ -2,8 +2,8 @@ import random
 import os
 from time import time, sleep
 
-player1 = "devanshi.py"
-player2 = "harshita.py"
+player1 = "checkers_agent.py"
+player2 = "player2.py"
 
 timep1 = timep2 = max(100, random.random() * 150) #time will be between 100 and 150 seconds
 pieces1 = pieces2 = 12
