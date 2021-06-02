@@ -4,7 +4,8 @@ from operator import add
 
 from pyspark import SparkContext
 
-# python task3.py "datasets/review.json" "output3.json" "default" 26 167
+# python task3.py "datasets/review.json" "task3_default_ans.json" default 20 50
+# python task3.py "datasets/review.json" "task3_customized_ans.json" customized 20 50
 args = sys.argv
 
 review_file = args[1].strip()

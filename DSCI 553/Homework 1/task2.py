@@ -12,7 +12,7 @@ output_file = args[3]
 if_spark = args[4]=='spark'
 
 if if_spark:
-    # python task2.py "datasets/review.json" "datasets/business.json" "output.json" spark 10 
+    # python task2.py "datasets/review.json" "datasets/business.json" "task2_spark.json" spark 20 
     sc = SparkContext.getOrCreate()
 
     reviews_txt = sc.textFile(review_file)
@@ -33,13 +33,14 @@ if if_spark:
             .reduceByKey(lambda a,b: (a[0]+b[0], a[1]+b[1])) \
             .map( lambda x: (x[0], x[1][0]/x[1][1]) ) \
             .sortBy( lambda x: ( -1*x[1], x[0] ) ) \
+            .map( lambda x: ( x[0], round(x[1], 1) ) ) \
             .take( int(args[5]) )
 
     with open(output_file, "w") as out:
         json.dump({'result':result}, out)
 
 else:
-    # python task2.py "datasets/review.json" "datasets/business.json" "output.json" no_spark 10 
+    # python task2.py "datasets/review.json" "datasets/business.json" "task2_nospark.json" no_spark 20
     reviews_stars  = defaultdict(list)
     with open(review_file) as fp:
         for js in fp.readlines():
@@ -67,6 +68,8 @@ else:
     for key,val in category.items():
         result.append( (key, sum(val)/len(val)) )
     result.sort( key=lambda x: ( -1*x[1], x[0] ) )
+    result = list(map(lambda x: (x[0], round(x[1],1)), result))
+
 
     with open(output_file, "w") as out:
         json.dump({'result':[ list(ans) for ans in result[ :int(args[5]) ] ]}, out)

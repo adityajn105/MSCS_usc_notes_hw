@@ -2,32 +2,27 @@ from pyspark import SparkContext
 import json
 import datetime
 import sys
+import re
 
 from operator import add 
 
 result = dict()
 args = sys.argv
 
-# python task1.py "datasets/review.json" "output.json" "datasets/stopwords" 2017 5 10
+# python task1.py "datasets/review.json" "task1_ans.json" "datasets/stopwords" 2018 10 10
 sc = SparkContext.getOrCreate()
 
-stopwords = set()
-with open(args[3], "r") as fp:
-    for word in fp.readlines():
-        stopwords.add(word.strip().lower())
+stopwords = set(sc.textFile(args[3]).map(lambda x: x.strip()).collect())
 stopwords.add("")
-
-puncts = set(["(", "[", ",", ".", "!", "?", ":", ";", "]", ")"])
 
 reviews = sc.textFile(args[1])
 def preprocess(json_txt):
     json_dict = json.loads(json_txt)
     json_dict['date'] = datetime.datetime.strptime(json_dict['date'], "%Y-%m-%d %H:%M:%S")
-    text = []
-    for c in list(json_dict['text'].lower().replace("\n","")):
-        if c not in puncts: text.append(c)
-    text = "".join(text).split(" ")
+    
+    text = re.sub(r'[\(\[,\].!?:;\)]', " ", json_dict['text'].lower() ).split()
     json_dict['text'] = [ word for word in text if word not in stopwords ]
+
     return json_dict
 
 reviews_json = reviews.map( lambda x : preprocess(x) )
@@ -49,7 +44,6 @@ result['D'] = reviews_json \
                 .take( int(args[5]))
 
 # Top n frequent words in the review text. The words should be in lower cases. 
-# The following punctuations “(”, “[”, “,”, “.”, “!”, “?”, “:”, “;”, “]”, “)” and the given stopwords are excluded (1pts)
 result['E'] = reviews_json \
             .flatMap( lambda x: [ (word, 1) for word in x['text'] ] ) \
             .reduceByKey(add) \
