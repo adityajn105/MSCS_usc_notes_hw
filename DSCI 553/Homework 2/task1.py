@@ -6,7 +6,7 @@ import sys
 from time import time
 
 #python task1.py 1 4 "datasets/small1.csv" output.txt
-sc = SparkContext.getOrCreate()
+sc = SparkContext("local[*]", "homework2_task1")
 args = sys.argv
 
 start = time()

@@ -6,7 +6,7 @@ import sys
 from time import time
 
 #python task2.py 70 50 "datasets/ub.csv" output2.txt
-sc = SparkContext.getOrCreate()
+sc = SparkContext("local[*]", "homework2_task2")
 args = sys.argv
 
 start = time()
@@ -17,7 +17,7 @@ rdd = sc.textFile(args[3].strip()) \
         .map(lambda x: tuple(x.split(','))) \
         .map(lambda x: (x[0], frozenset({x[1]})) ) \
         .reduceByKey(lambda x, y : x|y ) \
-        .filter(lambda x: len(x[1]) >= k) \
+        .filter(lambda x: len(x[1]) > k) \
         .map( lambda x: x[1] )
 
 count = rdd.count()
@@ -47,7 +47,7 @@ def getItemSet(partition, cnt, support):
         baskets.append( basket )
         singletons.update( basket )
     
-    threshold = (support*len(baskets))//cnt
+    threshold = (support*len(baskets))/cnt
     
     #convert all candidates to tuple
     candidates = { frozenset( (c,) ) for c in singletons }
@@ -92,7 +92,7 @@ def countFrequentItemset(partition, frequent_candidates):
     for basket in baskets:
         for itemset in frequent_candidates:
             if itemset.issubset(basket):
-                count[itemset]+=1
+                count[ itemset ]+=1
     
     freq_count = []
     for itemset, cnt in count.items():
@@ -101,7 +101,7 @@ def countFrequentItemset(partition, frequent_candidates):
 
 frequent_candidates = rdd.mapPartitions( lambda x: getItemSet(x, count, support) ) \
                         .distinct().collect()
-
+                        
 frequent_itemsets = rdd.mapPartitions(lambda x: countFrequentItemset(x, frequent_candidates)) \
         .reduceByKey(add) \
         .filter( lambda x: x[1] >= support ) \
