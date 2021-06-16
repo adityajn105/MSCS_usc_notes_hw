@@ -1,0 +1,6 @@
+*.res
+*.predict
+*.model
+*.json
+*.ipynb
+dataset/*
