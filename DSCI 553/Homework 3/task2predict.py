@@ -5,7 +5,7 @@ import math
 
 sc = SparkContext("local[*]", "homework3_task2predict")
 
-#python task2predict.py dataset/test_review.json task2model.model task2.predict 
+#spark-submit task2predict.py $ASNLIB/publicdata/test_review.json task2model.model task2.predict 
 args = sys.argv
 
 input_file = args[1]

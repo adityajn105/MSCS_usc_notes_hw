@@ -3,7 +3,9 @@ import sys
 import json
 from collections import defaultdict
 
-sc=SparkContext.getOrCreate()
+#spark-submit task3predict.py $ASNLIB/publicdata/train_review.json $ASNLIB/publicdata/test_review.json task3item.model task3item.predict item_based
+#spark-submit task3predict.py $ASNLIB/publicdata/train_review.json $ASNLIB/publicdata/test_review.json task3user.model task3user.predict user_based
+sc=SparkContext("local[*]", "homework3_task3predict")
 
 args = sys.argv
 
@@ -79,7 +81,7 @@ if cf_type == 'item_based':
     model = sc.textFile(model_file) \
         .map(json.loads) \
         .map(lambda x: (buss2idx.get(x['b1'], -1), buss2idx.get(x['b2'], -1), x['sim'])) \
-        .filter( lambda x: x[0]!=-1 and x[1]!=-1 ) \
+        .filter( lambda x: x[0]!=-1 or x[1]!=-1 ) \
         .map(lambda x: ( (x[0], x[1]), x[2]) if x[0]<x[1] else ((x[1], x[0]), x[2])) \
         .collectAsMap()
 
@@ -116,7 +118,7 @@ else:
     model = sc.textFile(model_file) \
         .map(json.loads) \
         .map(lambda x: (user2idx.get(x['u1'], -1), user2idx.get(x['u2'], -1), x['sim'])) \
-        .filter( lambda x: x[0]!=-1 and x[1]!=-1 ) \
+        .filter( lambda x: x[0]!=-1 or x[1]!=-1 ) \
         .map(lambda x: ( (x[0], x[1]), x[2]) if x[0]<x[1] else ((x[1], x[0]), x[2])) \
         .collectAsMap()
 

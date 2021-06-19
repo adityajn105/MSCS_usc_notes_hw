@@ -7,8 +7,8 @@ import math
 import random
 
 
-#python task3train.py dataset/train_review.json task3user.model user_based
-#python task3train.py dataset/train_review.json task3item.model item_based
+#spark-submit task3train.py $ASNLIB/publicdata/train_review.json task3user.model user_based
+#spark-submit task3train.py $ASNLIB/publicdata/train_review.json task3item.model item_based
 sc = SparkContext("local[*]", "homework3_task3train")
 
 def takeAvg(a):

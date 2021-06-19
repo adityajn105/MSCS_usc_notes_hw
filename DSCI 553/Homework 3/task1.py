@@ -5,7 +5,7 @@ from collections import defaultdict
 import random
 import sys
 
-#python task1.py dataset/train_review.json task1.res
+#python task1.py $ASNLIB/publicdata/train_review.json task1.res
 sc = SparkContext("local[*]", "homework2_task1")
 args = sys.argv
 

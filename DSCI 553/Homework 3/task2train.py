@@ -5,7 +5,7 @@ from collections import defaultdict
 import math
 import sys
 
-#python task2train.py dataset/train_review.json task2.model dataset/stopwords
+#spark-submit task2train.py $ASNLIB/publicdata/train_review.json task2.model $ASNLIB/publicdata/stopwords
 args = sys.argv
 
 input_file_path = args[1]
@@ -39,6 +39,7 @@ TOTAL_NO_OF_WORDS = wordCount.map( lambda x: x[1] ).reduce(lambda x,y: x+y)
 rarewords = set(wordCount.filter(lambda x: x[1] < TOTAL_NO_OF_WORDS*0.000001) \
         .map(lambda x: x[0]).collect() )
 
+
 business_review = business_review.mapValues( 
     lambda words: [word for word in words if word not in rarewords] )
 
@@ -55,6 +56,7 @@ idf = business_review.flatMap( lambda x:  [ (w,1) for w in set(x[1]) ] ) \
         .reduceByKey( lambda x,y: x+y ) \
         .mapValues( lambda x: math.log2(TOTAL_DOCS/x) ) \
         .collectAsMap()
+        
 
 def calc_tfidf(x, idf):
     tfidf = []
@@ -64,6 +66,7 @@ def calc_tfidf(x, idf):
     return list(map( lambda x: x[1], tfidf[:200] ))
 
 tfidf = term_freq.mapValues( lambda x: calc_tfidf(x, idf))
+
 
 words = tfidf.flatMap(lambda x: x[1]).distinct().collect()
 word2idx = { word:idx for word,idx in zip(words, range(len(words))) }
