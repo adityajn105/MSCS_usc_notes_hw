@@ -1,4 +1,3 @@
-from time import clock_settime
 from pyspark import SparkContext
 import os
 import random
@@ -7,20 +6,23 @@ import math
 import json
 import sys
 from time import time
-# os.environ['PYSPARK_PYTHON'] = '/usr/local/bin/python3.6'
-# os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/local/bin/python3.6'
+from collections import OrderedDict
+
+os.environ['PYSPARK_PYTHON'] = '/usr/local/bin/python3.6'
+os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/local/bin/python3.6'
 
 sc = SparkContext.getOrCreate()
+sc.setLogLevel("OFF")
+sc.setSystemProperty('spark.driver.memory', '4g')
+sc.setSystemProperty('spark.executor.memory', '4g')
 
 input_dir = sys.argv[1]
 n_clusters = int(sys.argv[2])
-intermediate_results = sys.argv[3]
-output_file = sys.argv[4]
+output_file = sys.argv[3]
+intermediate_results = sys.argv[4]
 
-#random.seed(10)
-
-alpha = 3
-round = 1
+alpha = 2
+round_id = 1
 files = list(map(lambda x: os.path.join(input_dir,x), os.listdir(input_dir)))
 files.sort( key=lambda x: x)
 
@@ -38,7 +40,7 @@ def getDataLoad(file):
         points = line.split(',')
         data.append([float(x) for x in points])
     fp.close()
-    #random.shuffle(data)
+    random.shuffle(data)
     return data
 
 def euclidean(x1, x2):
@@ -61,10 +63,10 @@ def add_vector( v1, v2 ):
 
 data = getDataLoad(files[0])
 d = len(data[0])-1
-threshold = 3*math.sqrt(d)
+threshold = alpha*math.sqrt(d)
 
 class KMeans():
-    def __init__(self, n_clusters=10, max_iterations=20):
+    def __init__(self, n_clusters=10, max_iterations=30):
         self.k = n_clusters
         self.max_it = max_iterations
     
@@ -89,10 +91,11 @@ class KMeans():
     #         cluster_centers.append(x[idx])
     #     return cluster_centers
 
-    def fit(self, data):
+    def fit(self, data, cluster_centers = None):
         "returns ans, sumamry, Map[id, cluster_id], "
         initial = sc.parallelize(data).map(lambda x: ( str(int(x[0])), x[1:] ))
-        cluster_centers = self.initialize_cluster([row[1:] for row in data])
+        if cluster_centers == None:
+            cluster_centers = self.initialize_cluster([row[1:] for row in data])
         i = 0
         while i != self.max_it:
             point_cluster = initial.mapValues( lambda x: [euclidean(x, center) for center in cluster_centers] ) \
@@ -134,6 +137,19 @@ def seperate_retained( ans, summary,  cluster_points):
             cluster_points.pop(k)
     return ans, summary, cluster_points, retained
 
+# def getInitialCenters( cluster_points, t=10 ): #cluster point =  {cluster_id:  [( id, point ), (id, point)] }
+#     cluster_points = [ v for _,v in cluster_points.items() ] # [ [( id, point ), (id, point)], ...]
+#     cluster_points.sort(key = lambda x: len(x), reverse=True)
+#     print( list(map(lambda x: len(x), cluster_points )))
+
+#     initial_centers = []
+#     for cluster in cluster_points[:t]:
+#         initial, n = [0]*d, len(cluster)
+#         for _, point in cluster:
+#             initial = add_vector( initial, point )
+#         initial_centers.append( [ v/n for v in initial ] )
+#     return initial_centers
+        
 def getInteriorRetained( cluster_points, t=10):
     interior, retained = [], []
     for _, ls in cluster_points.items():
@@ -144,15 +160,15 @@ def getInteriorRetained( cluster_points, t=10):
     return interior, retained
 
 start = time()
-fraction = int(len(data)*0.3)
+fraction = int(len(data)*0.5)
 sample = data[:fraction]
 
 ans, summary, cluster_points = KMeans(n_clusters = n_clusters*5).fit(sample)
-
 interior, retained = getInteriorRetained(cluster_points)
 retained_set.extend(retained)
 
-ds_ans, ds_summary, _ = KMeans(n_clusters = n_clusters, max_iterations=5).fit(interior)
+ds_ans, ds_summary, _ = KMeans(n_clusters = n_clusters).fit(interior)
+#print("CLUSTER LENGTH", [ s[0] for _,s in ds_summary.items() ])
 
 rest_data = data[fraction:]
 point_cluster, summary, cluster_points = KMeans(n_clusters = n_clusters*3, max_iterations = 5).fit(rest_data)
@@ -160,15 +176,15 @@ point_cluster, summary, cluster_points = KMeans(n_clusters = n_clusters*3, max_i
 cs_map, cs_summary, _, retain = seperate_retained(point_cluster, summary, cluster_points)
 retained_set.extend(retain)
 
-print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
-intermediates.append(f"{round},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
+#print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
+intermediates.append(f"{round_id},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
 
 def mahalanobis_distance( point, N, SUM, SUMSQ ):
     mh = 0
     for i in range(d):
         std = math.sqrt( (SUMSQ[i]/N) - (SUM[i]/N)**2 )
         centroid = SUM[i]/N
-        normalized = (point[i]-centroid)/std
+        normalized = (point[i]-centroid) if std==0 else (point[i]-centroid)/std
         mh += (normalized**2)
     return math.sqrt(mh)
 
@@ -195,8 +211,36 @@ def updateCS( cs_ans, cs_summary, point_cluster, summary ):
     for pt, cluster in point_cluster.items():
         cs_ans.update( { pt: cluster+mx_idx } )
     
-    for cluster, summary in summary.items():
-        cs_summary.update( { cluster+mx_idx: summary } )
+    for cluster, summ in summary.items():
+        cs_summary.update( { cluster+mx_idx: summ } )
+
+def mergeCS( mapp, summary ):
+    new_summary, new_cmap = dict(), dict()
+    keys = list(summary.keys())
+    i = 0
+    avail = set(keys)
+    for k1, k2 in combinations(keys, 2):
+        if k1 not in avail or k2 not in avail: continue
+        centroid1 = [ v/summary[k1][0] for v in summary[k1][1] ]
+        centroid2 = [ v/summary[k2][0] for v in summary[k2][1] ]
+        mh = max( mahalanobis_distance( centroid1, summary[k2][0], summary[k2][1], summary[k2][2] ),
+                  mahalanobis_distance( centroid2, summary[k1][0], summary[k1][1], summary[k1][2] ) )
+
+        if mh < threshold:
+            new_cmap[k1], new_cmap[k2] = i, i
+            avail.discard(k1)
+            avail.discard(k2)
+            new_summary[i] = [ summary[k1][0]+summary[k2][0], add_vector(summary[k1][1], summary[k2][1]), add_vector(summary[k1][2], summary[k2][2]) ]
+            i+=1
+    
+    for k,v in mapp.items():
+        if v not in new_cmap:
+            new_cmap[v] = i
+            new_summary[i] = summary[v]
+            i+=1
+        mapp[k] = new_cmap[v]
+
+    return mapp, new_summary            
 
 
 for file in files[1:]:
@@ -210,8 +254,7 @@ for file in files[1:]:
     ds_updates = rdd.filter( lambda x: x[0] != -1 ).map(lambda x: (x[0], (1, x[2], [v**2 for v in x[2]]) ) ) \
         .reduceByKey( lambda x,y: ( x[0]+y[0], add_vector(x[1],y[1]), add_vector(x[2],y[2]) ) ) \
         .collectAsMap()
-
-    updateSummary(ds_summary, ds_updates)
+    
     cs_rdd = rdd.filter( lambda x: x[0] == -1 ).map( lambda x: (x[1], x[2]) ) \
         .map(lambda x: (assign_to_cluster(x[1], threshold, cs_summary), x[0], x[1] ) )
     
@@ -221,52 +264,22 @@ for file in files[1:]:
         .reduceByKey( lambda x,y: ( x[0]+y[0], add_vector(x[1],y[1]), add_vector(x[2],y[2]) ) ) \
         .collectAsMap()
 
-    updateSummary(cs_summary, cs_updates)
-
     retained_set.extend(cs_rdd.filter( lambda x: x[0] == -1 )\
                     .map( lambda x: [float(x[1])]+x[2] ).collect())
 
+    updateSummary(ds_summary, ds_updates)
+    updateSummary(cs_summary, cs_updates)
 
+    if len(retained_set) >= 3*n_clusters:
+        point_cluster, summary, cluster_points = KMeans( n_clusters=3*n_clusters).fit(retained_set)
+        point_cluster, summary, _, retained_set = seperate_retained(point_cluster, summary, cluster_points)
+        updateCS( cs_map, cs_summary, point_cluster, summary )
 
-    # if len(retained_set) >= 3*n_clusters:
-    #     point_cluster, summary, cluster_points = KMeans( n_clusters=3*n_clusters)\
-    #         .fit(retained_set)
-    #     point_cluster, summary, _, retained_set = seperate_retained(point_cluster, summary, cluster_points)
-        
-    #     updateCS( cs_map, cs_summary, point_cluster, summary )
+    cs_map, cs_summary = mergeCS( cs_map, cs_summary )
 
-    # avail = set(cs_summary.keys())
-    # new_cluster_map = {}
-    # i = 0
-    # for key1, key2 in combinations(cs_summary.keys(), 2):
-    #     if key1 in avail and key2 in avail:
-    #         center2 = [ v/cs_summary[key2][0] for v in cs_summary[key2][1]]
-    #         mh = mahalanobis_distance( center2, \
-    #             cs_summary[key1][0], cs_summary[key1][1], cs_summary[key1][2] )
-    #         if mh < threshold:
-    #             new_cluster_map[key1] = i
-    #             new_cluster_map[key2] = i
-    #             avail.discard(key1)
-    #             avail.discard(key2)
-    #             i+=1
-    # for key in cs_summary.keys():
-    #     if key not in new_cluster_map:
-    #         new_cluster_map[key] = i
-    #         i+=1
-                
-    # for idx,old_cluster in cs_map.items():
-    #     cs_map[idx] = new_cluster_map[old_cluster]
-
-    # temp_cs_summary = deepcopy(cs_summary)
-    # cs_summary.clear()
-    # for old, new in new_cluster_map.items():
-    #     if new not in cs_summary:
-    #         cs_summary[new] = temp_cs_summary[old]
-    #     else:
-    #         updateSummary( cs_summary, { new: temp_cs_summary[old] } )
-    round+=1
-    print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
-    intermediates.append(f"{round},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
+    round_id+=1
+    #print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
+    intermediates.append(f"{round_id},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
 
 new_cluster_map = dict()
 for key, summary in cs_summary.items():
@@ -291,14 +304,16 @@ ds_ans.update(sc.parallelize( retained_set ).map( lambda x: (str(int(x[0])), x[1
     .mapValues( lambda x: -1 ) \
     .collectAsMap())
 
-round+=1
-print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
-intermediates.append(f"{round},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
-with open(intermediate_results, "w") as inter:
-    print("\n".join(intermediates), file=inter)
+round_id+=1
+# print( f"round_id: {round}, no_of_cluster_discard: {len(ds_summary)}, no_of_points_discard: {len(ds_ans)}, no_of_cluster_compression: {len(cs_summary)}, no_of_points_compression: {len(cs_map)}, no_of_points_retained: {len(retained_set)}"  )
+# intermediates.append(f"{round},{len(ds_summary)},{len(ds_ans)},{len(cs_summary)},{len(cs_map)},{len(retained_set)}")
+with open(intermediate_results, "w", encoding="utf-8") as inter:
+    inter.write("\n".join(intermediates))
 
-with open(output_file, "w") as out:
-    output = json.dumps(ds_ans, sort_keys=True)
-    print(output, file=out)
+with open(output_file, "w", encoding="utf-8") as out:
+    answer = OrderedDict()
+    for k in sorted(ds_ans.keys(), key=lambda x: int(x)):
+        answer[str(k)] = ds_ans[str(k)]
+    out.write(json.dumps(answer))
 
-print(f"Time Taken : {time()-start}")
+#print(f"Time Taken : {time()-start}")
