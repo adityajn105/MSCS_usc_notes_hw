@@ -21,7 +21,7 @@ n_clusters = int(sys.argv[2])
 output_file = sys.argv[3]
 intermediate_results = sys.argv[4]
 
-alpha = 2
+alpha = 2.5
 round_id = 1
 files = list(map(lambda x: os.path.join(input_dir,x), os.listdir(input_dir)))
 files.sort( key=lambda x: x)
