@@ -1,247 +1,283 @@
 from pyspark import SparkContext
-from typing import Tuple, List, Dict, Any
-import random
-import math
-import pdb
-import os
-import sys
 import json
+import sys
+import random
+from itertools import combinations
 from collections import OrderedDict
+import math
+import os
 
-#python bfr_hb.py data/test4 8 output.json intermediate.csv
+#os.environ['PYSPARK_PYTHON'] = '/usr/local/bin/python3.6'
+#os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/local/bin/python3.6'
 
-def initialize_clusters(datapoints_sample, k) -> Dict[int, List[str]]:
-    init = random.sample(datapoints_sample, k)
-    centroids = dict((i,k[1]) for i,k in enumerate(init))
-    return centroids
+input_dir = sys.argv[1]
+n_clusters = int(sys.argv[2])
+output_file = sys.argv[3]
+intermediate_results = sys.argv[4]
 
-def findEuclideanDistance(a, b) -> float:
-    dist = 0
-    for i,j in zip(a,b):
-        dist += (float(i)-float(j))**2
-    return math.sqrt(dist)
-
-def assign_cluster(co_ords: List[str], 
-            centroids: Dict[int, List[str]]) -> int:
-    cluster = -1
-    min_dist = float('inf')
-    for k,v in centroids.items():
-        curr_dist = findEuclideanDistance(co_ords, v)
-        if min_dist > curr_dist:
-            min_dist = curr_dist
-            cluster = k
-    return cluster
-
-def calculateAverage(cluster_points: List[int], 
-                    dp_map: Dict[str, List[str]], N: int) -> List[float]:
-    avg = [0 for _ in range(N)]
-    for i in range(N):
-        for p in cluster_points:
-            avg[i] += float(dp_map[str(p)][i])
-        avg[i] /= len(cluster_points) 
-    return (avg)
-
-def calculateSumSquare(cluster_points, dp_map, N):
-    sumsq = [0 for i in range(N)]
-    for i in range(N):
-        for p in cluster_points:
-            sumsq[i] += float(dp_map[str(p)][i]) ** 2
-    return sumsq
-
-def calculateMahalanobis(co_ords, N, stats):
-    min_dist = float('inf')
-    cluster = -1
-    for j, summ in stats.items():
-        sum_ = 0
-        CNT, SUM, SUMSQ= summ[0], summ[1], summ[2]
-        STD = [ math.sqrt( (b/CNT - (a/CNT)**2) )  for a,b in zip(SUM, SUMSQ)  ]
-        for i in range(N):    
-            mb = float(co_ords[i]) - float(SUM[i])/CNT
-            mb = mb/STD[i]
-            mb = mb ** 2
-            sum_ += mb
-        curr_dist = math.sqrt(sum_)
-        if min_dist > curr_dist and curr_dist <= 2*math.sqrt(N):
-            min_dist = math.sqrt(sum_) 
-            cluster = j
-    return cluster
-
-def k_means(dp: Any, 
-            centroids: Dict[int, List[str]], 
-            dp_map: Dict[str, List[str]], n: int) -> Tuple[Any, Dict[int, List[float]]]:
-            
-    prev_centroids: Dict[int, List[str]] = dict()
-    cluster_list: Any = dict()
-    max_iteration = 20
-    while prev_centroids != centroids and max_iteration != 0:
-        cluster_map = dp.mapValues(lambda x : assign_cluster(x, centroids))
-        cluster_list = cluster_map.map(lambda x: (x[1], [int(x[0])])).reduceByKey(lambda x,y: x+y)
-        #print('i : ', i, '\ncl : ', cluster_list.take(5))
-        prev_centroids = centroids
-        centroids = cluster_list.mapValues(lambda x: calculateAverage(x, dp_map, n)).collectAsMap()
-        max_iteration -= 1
-    return cluster_list, centroids
-
-def calculateStatistics(list_of_points: List[int], 
-                    map: Dict[str, List[str]], n: int) -> Tuple[int, List[float], List[float]]:
-    count = len(list_of_points)
-    sum_ = [v*count for v in calculateAverage(list_of_points, map, n)]
-    sumsq_ = calculateSumSquare(list_of_points, map, n)
-    return ( count, sum_, sumsq_)
-
-path = sys.argv[1]
 sc = SparkContext.getOrCreate()
 sc.setLogLevel("OFF")
 sc.setSystemProperty('spark.driver.memory', '4g')
 sc.setSystemProperty('spark.executor.memory', '4g')
-files = os.listdir(path)
-files.sort()
-firstround = True
 
-discard: Dict[str, int] = dict()
-rs: Dict[str, int] = dict()
-cs: Dict[int, List[str] ] = dict()
-cs_op: Dict[str, int] = dict()
+alpha = 2.5
+no_of_rounds_completed = 1
+list_of_files = list(sorted(map(lambda x: os.path.join(input_dir,x), os.listdir(input_dir))))
+
+retained_points = []
+ans = {}
+compression_stats = {}
+discard_stats = {}
+
+def euclidean_distance_between_vectors(x1, x2): return math.sqrt(sum([(i1-i2)**2 for i1,i2 in zip(x1,x2)]))
+
+def min_argument_in_list(x):
+    n = len(x)
+    min_x, min_i = float('inf'), 0
+    for i, xi in zip(range(n), x):
+        if xi < min_x: min_x, min_i = xi, i
+    return min_i
+
+def vector_addition( v1, v2 ): return [ i+j for i,j in zip(v1,v2) ]
+
+def getdataListLoad(file_path):
+    dataList = list()    
+    with open(file_path, "r") as fp:
+        for line in fp.readlines():
+            points = line.split(',')
+            dataList.append([float(x) for x in points])
+    random.shuffle(dataList)
+    return dataList
 
 
-K = int(sys.argv[2])
-output_file = sys.argv[3]
-intermediate_file = sys.argv[4]
+log_list = [ "no_of_rounds_completed,nof_cluster_discard,nof_point_discard,nof_cluster_compression,nof_point_compression,nof_point_retained"]   
 
-round_id = 1
-intermediate_headers = ["round_id,nof_cluster_discard,nof_point_discard,nof_cluster_compression,nof_point_compression,nof_point_retained"]
-for f in files:
-# read csv and create map between indices and coordinates
-    # variable initialization
-    threshold = 5
-    #init = []
-    clusters: Dict[int, List[str]] = dict()
-    if firstround:
-        firstround = False
+dataList = getdataListLoad(list_of_files[0])
+
+d = len(dataList[0])-1
+tres_hold = alpha*math.sqrt(d)
+
+class k_means_algo():
+    def __init__(self, n_clusters=10, max_iterations=30):
+        self.k = n_clusters
+        self.max_it = max_iterations
+    
+    def startingize_cluster_center(self, x):
+        return random.sample(x, self.k)
+
+    def fit(self, dataList, cluster_centers = None):
+        "returns ans, sumamry, Map[id, cluster_id], "
+        starting = sc.parallelize(dataList).map(lambda x: ( str(int(x[0])), x[1:] ))
+        if cluster_centers == None:
+            cluster_centers = self.startingize_cluster_center([row[1:] for row in dataList])
+        i = 0
+        while i != self.max_it:
+            points_in_clusters = starting.mapValues( lambda x: [euclidean_distance_between_vectors(x, center) for center in cluster_centers] ) \
+                             .mapValues(lambda x: min_argument_in_list(x)).collectAsMap() #(id, cluster_id)
+
+            new_cluster_centers = starting.map(lambda x: (points_in_clusters[x[0]], (x[1],1)) ) \
+                            .reduceByKey( lambda x,y: (vector_addition(x[0],y[0]), x[1]+y[1]) ) \
+                            .mapValues( lambda x: [y/x[1] for y in x[0]] )
+
+            new_cluster_centers = [ x[1] for x in sorted(new_cluster_centers.collect()) ]
+
+            if self.cluster_changed(cluster_centers, new_cluster_centers):
+                cluster_centers = new_cluster_centers
+            else: 
+                cluster_centers = new_cluster_centers 
+                break
+            i+=1
+
         
-        datapoints: List[ Tuple[str, List[str]] ] = sc.textFile(path+"/"+f).map(lambda f: f.split(",")) \
-                    .map(lambda x: (x[0],x[1:])).collect()
-
-        sample_size = int(0.3 * len(datapoints))
-        #random.shuffle(datapoints)   #taking first 10000 points
-        datapoints_sample = datapoints[:sample_size]
-        datapoints_map = dict(datapoints_sample)
-        datapoints_remaining = datapoints[sample_size:]
-        # datapoints_remaining_map = dict(datapoints_remaining)
-        print('sample size : ', sample_size)
-        N = len(datapoints[0][1])
-        print('no_of_dimensions: ', N)
-
-        # initialize k points
-        centroids = initialize_clusters(datapoints_sample, K*3)
-        dp = sc.parallelize(datapoints_sample)
-
-        #cluster_list = RDD[ (index of cluster, list of points' index) ]
-        #centroids =  Dict[cluster_index , average value]
+        cluster_points = starting.map( 
+            lambda x: (min_argument_in_list([euclidean_distance_between_vectors(x[1], c) for c in cluster_centers]), (x[0], x[1]) ) ) \
+            .groupByKey().mapValues(list).collectAsMap()
         
-        cluster_list, centroids = k_means(dp, centroids, datapoints_map, N)  
-
-        #cluster_dict = Dict[ (index of cluster, list of points' index) ]
-        cluster_dict = cluster_list.collectAsMap()
+        statistics = starting.mapValues( lambda x: ([euclidean_distance_between_vectors(x, c) for c in cluster_centers], x) ) \
+                        .map( lambda x: (min_argument_in_list(x[1][0]), (1, x[1][1], [v**2 for v in x[1][1]])) ) \
+                        .reduceByKey( lambda x,y: [x[0]+y[0], vector_addition(x[1],y[1]), vector_addition(x[2],y[2])] ) \
+                        .collectAsMap() 
         
-        #outliers = Dict[ (custer index, list of points' index)]
-        outliers = cluster_list.filter(lambda x: len(x[1]) < threshold) \
-                .flatMap(lambda x: [j for j in x[1]]) \
-                .map(lambda x: (str(x), datapoints_map[str(x)]))
+        return points_in_clusters, statistics, cluster_points
+    
+    def cluster_changed(self, old_vec, new_vec):
+        for oi,ni in zip(old_vec, new_vec):
+            if oi!=ni: return True
+        return False
 
-        #interior = Dict[ (custer index, list of points' index)]
-        interior = cluster_list.filter(lambda x: len(x[1]) >= threshold) \
-                .flatMap(lambda x: [j for j in x[1]]) \
-                .map(lambda x: (str(x), datapoints_map[str(x)]))
-
-        #interior_map = interior.collectAsMap()
-        interior_list = interior.collect()
-
-        #centroids = Dict[ (custer index, list of co-ords)],10,42612,0,
-
-        centroids = initialize_clusters(interior_list, K)
-
-        #discard_set_clusters = RDD[ (index of cluster, list of points' index) ]
-        discard_set_clusters, centroids_int = k_means(interior, centroids, datapoints_map, N)
-        discard_set = discard_set_clusters.collectAsMap()
-        # print('discard set : ', discard_set_clusters.take(2))
-
-        #discard set op
-        ds_op = discard_set_clusters.flatMap(lambda x: [(str(j),x[0]) for j in x[1]])\
-                .collectAsMap()
-        discard.update(ds_op)
-        # print('discard : ', len(discard))
-        # for k,v in discard_set.items():
-        #     print('cluster index : ', k, ' no of points : ', len(v))
-        # print('no of discarded points: ', len(ds_op))
-        #discard_stats = Dict[ (Cluster Index, ( len(list_of_points), sum_, sumsq_, std_dev ) ) ]
-        discard_stats = discard_set_clusters.mapValues(lambda x: calculateStatistics(x, datapoints_map, N)).collectAsMap()
-        print([v[0] for v in discard_stats.values() ])
-        outliers_cnt = outliers.count()
-        # print('outliers count : ', outliers.count())
-        cs_stats = dict()
-        if K*3 < outliers_cnt:
-            outliers_map = outliers.collectAsMap()
-            outliers_list = outliers.collect()
-            centroids = initialize_clusters(outliers_list, K*3)
-
-            #clusters = RDD[ (index of cluster, list of points' index) ]
-            clusters, centroids = k_means(outliers, centroids, outliers_map, N)
-            
-            cluster_map = clusters.collectAsMap()
-            
-            rs_op = clusters.filter(lambda x: len(x[1]) < 2) \
-                    .flatMap(lambda x: [(str(y),-1) for y in x[1]] ).collectAsMap()
-            
-            rs.update(rs_op)
-
-            cs = clusters.filter(lambda x: len(x[1]) > 1) 
-            cs_map = cs.collectAsMap()
-            
-            cs_stats = cs.mapValues(lambda x: calculateStatistics(x, datapoints_map, N)).collectAsMap()
-            
+        
+def seperate_interior_and_retained( points_in_cluster, t=10):
+    interior, retained = [], []
+    for _, ls in points_in_cluster.items():
+        if len(ls) < t: 
+            for key, val in ls: retained.append( [float(key)]+val )
         else:
-            rs.update(outliers.mapValues(lambda x: -1).collectAsMap())
-    else:
-        datapoints_remaining = sc.textFile(path+"/"+f).map(lambda f: f.split(",")) \
-                    .map(lambda x: (x[0],x[1:])).collect()
-   
-    datapoints_remaining_map = dict(datapoints_remaining)
-    dp_remaining = sc.parallelize(datapoints_remaining)
+            for key, val in ls: interior.append( [float(key)]+val )
+    return interior, retained
+
+def get_points_to_retain( ans, statistics,  points_in_cluster):
+    rs = []
+    for k,v in list(statistics.items()):
+        if v[0] <= 1:
+            if v[0] == 1:
+                key, val = points_in_cluster[k][0]
+                rs.append(  [float(key)]+val ) 
+                ans.pop(key)
+            statistics.pop(k)
+            points_in_cluster.pop(k)
+    return ans, statistics, points_in_cluster, rs
+
+
+fraction = int(len(dataList)*0.5)
+random_sample = dataList[:fraction]
+
+ans, statistics, cluster_points = k_means_algo(n_clusters = n_clusters*5).fit(random_sample)
+interior, retained = seperate_interior_and_retained(cluster_points)
+retained_points.extend(retained)
+
+discard_answer, discard_set_statistics, _ = k_means_algo(n_clusters = n_clusters).fit(interior)
+
+rest_dataList = dataList[fraction:]
+points_in_clusters, statistics, cluster_points = k_means_algo(n_clusters = n_clusters*3, max_iterations = 5).fit(rest_dataList)
+
+cs_map, cs_statistics, _, retain = get_points_to_retain(points_in_clusters, statistics, cluster_points)
+retained_points.extend(retain)
+
+log_list.append(f"{no_of_rounds_completed},{len(discard_set_statistics)},{len(discard_answer)},{len(cs_statistics)},{len(cs_map)},{len(retained_points)}")
+
+def Update_CS_OR_DS(old_summation, updates):
+    for idx, statistics in updates.items():
+        old_summation[idx][0] += statistics[0]
+        for i in range(d):
+            old_summation[idx][1][i] += statistics[1][i]
+            old_summation[idx][2][i] += statistics[2][i]
+
+def ass_2_cluster( point, tres_hold, statistics ):
+    min_idx, min_mh = 0, float('inf')
+    for idx, summ in statistics.items():
+        N, summation, summation_square = summ[0], summ[1], summ[2]
+        mh = mh_distance(point, N, summation, summation_square)
+        if mh < min_mh: min_mh, min_idx = mh, idx
+            
+    if min_mh < tres_hold: return min_idx
+    else: return -1
+
+def mh_distance( point, N, summation, summation_square ):
+    mh = 0
+    for i in range(d):
+        std = math.sqrt( (summation_square[i]/N) - (summation[i]/N)**2 )
+        centroid_point = summation[i]/N
+        norm = (point[i]-centroid_point) if std==0 else (point[i]-centroid_point)/std
+        mh += math.pow(norm,2)
+    return mh**0.5
+
+
+
+def updateCS( cs_ans, cs_statistics, points_in_clusters, statistics ):
+    mx_idx = max(cs_statistics.keys())
+    for pt, cluster in points_in_clusters.items():
+        cs_ans.update( { pt: cluster+mx_idx } )
     
-    all_clusters = dp_remaining.mapValues(lambda x: calculateMahalanobis(x, N, discard_stats))
-    assigned = all_clusters.filter(lambda x: x[1] >= 0)
-    ds_out = assigned.collectAsMap()
-    discard.update(ds_out)
-    unassigned = all_clusters.filter(lambda x: x[1] < 0)
+    for cluster, summ in statistics.items():
+        cs_statistics.update( { cluster+mx_idx: summ } )
+
+def mergeCS( mapp, statistics ):
+    new_statistics, new_cmap = dict(), dict()
+    keys = list(statistics.keys())
+    i = 0
+    avail = set(keys)
+    for k1, k2 in combinations(keys, 2):
+        if k1 not in avail or k2 not in avail: continue
+        centroid1 = [ v/statistics[k1][0] for v in statistics[k1][1] ]
+        centroid2 = [ v/statistics[k2][0] for v in statistics[k2][1] ]
+        mh = max( mh_distance( centroid1, statistics[k2][0], statistics[k2][1], statistics[k2][2] ),
+                  mh_distance( centroid2, statistics[k1][0], statistics[k1][1], statistics[k1][2] ) )
+
+        if mh < tres_hold:
+            new_cmap[k1], new_cmap[k2] = i, i
+            avail.discard(k1)
+            avail.discard(k2)
+            new_statistics[i] = [ statistics[k1][0]+statistics[k2][0], vector_addition(statistics[k1][1], statistics[k2][1]), vector_addition(statistics[k1][2], statistics[k2][2]) ]
+            i+=1
     
-    if len(cs_stats) > 0:
-        all_cs = unassigned.map(lambda x: (x[0], calculateMahalanobis(datapoints_remaining_map[str(x[0])], N, cs_stats)))
-        assigned_cs = all_cs.filter(lambda x: x[1] >= 0).collectAsMap()
-        unassigned_cs = all_cs.filter(lambda x: x[1] < 0).map(lambda x: (x[0], -1)).collectAsMap()
-        rs.update(unassigned_cs)
-        rs.update(assigned_cs)
-    else:
-        rs.update(unassigned.collectAsMap())
+    for k,v in mapp.items():
+        if v not in new_cmap:
+            new_cmap[v] = i
+            new_statistics[i] = statistics[v]
+            i+=1
+        mapp[k] = new_cmap[v]
 
-    if cs: 
-        cs_to_ds = cs.map(lambda x: (x[0], calculateMahalanobis(
-            [y/cs_stats[x[0]][0] for y in cs_stats[x[0]][1]]
-            , N, discard_stats)) )
-        cs = cs_to_ds.filter(lambda x: x[1] < 0)
-        cs_merged_ds = cs_to_ds.filter(lambda x: x[1] >= 0) \
-            .flatMap(lambda x: [(str(y),x[1]) for y in cs_map[x[0]]]).collectAsMap()
-        discard.update(cs_merged_ds)
-    intermediate_headers.append(f"{round_id},{len(discard_stats)},{len(discard)},{len(cs_op)},{len(cs_op)},{len(rs)}")
+    return mapp, new_statistics            
 
-discard.update(rs)
-if cs_op: discard.update(cs_op)
 
-with open(output_file, 'w') as out:
-    answer = OrderedDict()
-    for k in sorted(discard.keys(), key=lambda x: int(x)):
-        answer[str(k)] = discard[str(k)]
-    out.write(json.dumps(answer))
+for file in list_of_files[1:]:
+    dataList = getdataListLoad(file)
+    rdd = sc.parallelize(dataList).map( lambda x: (str(int(x[0])), x[1:]) ) \
+        .map(lambda x: (ass_2_cluster(x[1], tres_hold, discard_set_statistics), x[0], x[1] ) )
 
-with open(intermediate_file, "w") as op:
-    op.write("\n".join(intermediate_headers))
+    discard_answer.update(rdd.filter(lambda x: x[0] != -1).map( lambda x: (x[1], x[0]) ).collectAsMap())
+    
+    
+    ds_updates = rdd.filter( lambda x: x[0] != -1 ).map(lambda x: (x[0], (1, x[2], [v**2 for v in x[2]]) ) ) \
+        .reduceByKey( lambda x,y: ( x[0]+y[0], vector_addition(x[1],y[1]), vector_addition(x[2],y[2]) ) ) \
+        .collectAsMap()
+    
+    cs_rdd = rdd.filter( lambda x: x[0] == -1 ).map( lambda x: (x[1], x[2]) ) \
+        .map(lambda x: (ass_2_cluster(x[1], tres_hold, cs_statistics), x[0], x[1] ) )
+    
+    cs_map.update(cs_rdd.filter(lambda x: x[0] != -1).map( lambda x: (x[1], x[0]) ).collectAsMap())
+
+    cs_updates = cs_rdd.filter( lambda x: x[0] != -1 ).map(lambda x: (x[0], (1, x[2], [v**2 for v in x[2]]) ) ) \
+        .reduceByKey( lambda x,y: ( x[0]+y[0], vector_addition(x[1],y[1]), vector_addition(x[2],y[2]) ) ) \
+        .collectAsMap()
+
+    retained_points.extend(cs_rdd.filter( lambda x: x[0] == -1 )\
+                    .map( lambda x: [float(x[1])]+x[2] ).collect())
+    Update_CS_OR_DS(discard_set_statistics, ds_updates)
+    Update_CS_OR_DS(cs_statistics, cs_updates)
+
+    if len(retained_points) >= 3*n_clusters:
+        points_in_clusters, statistics, points_in_cluster = k_means_algo( n_clusters=3*n_clusters).fit(retained_points)
+        points_in_clusters, statistics, _, retained_points = get_points_to_retain(points_in_clusters, statistics, points_in_cluster)
+        updateCS( cs_map, cs_statistics, points_in_clusters, statistics )
+
+    cs_map, cs_statistics = mergeCS( cs_map, cs_statistics )
+
+    no_of_rounds_completed+=1
+    log_list.append(f"{no_of_rounds_completed},{len(discard_set_statistics)},{len(discard_answer)},{len(cs_statistics)},{len(cs_map)},{len(retained_points)}")
+
+new_cluster_map = dict()
+for key, statistics in cs_statistics.items():
+    center = [ v/statistics[0] for v in statistics[1]]
+    best = (float('inf'), 0)
+    for ds_cluster_idx, ds_sum in discard_set_statistics.items():
+        mh = mh_distance( center, ds_sum[0], ds_sum[1], ds_sum[2] )
+        if mh < best[0]: best = (mh, ds_cluster_idx)
+    new_cluster_map[key] = best[1]
+    
+for idx, old_cluster in cs_map.items():
+    cs_map[idx] = new_cluster_map[old_cluster]
+
+discard_answer.update(cs_map)
+    
+discard_answer.update(sc.parallelize( retained_points ).map( lambda x: (str(int(x[0])), x[1:]) ) \
+    .mapValues( lambda x: -1 ) \
+    .collectAsMap())
+
+centers = []
+for i in range(len(discard_set_statistics)):
+    statistics = discard_set_statistics[i]
+    center = [ v/discard_set_statistics[i][0] for v in discard_set_statistics[i][1] ]
+    centers.append(center)
+
+out = open(output_file, "w")
+answer = OrderedDict()
+for k in sorted(discard_answer.keys(), key=lambda x: int(x)):
+    answer[str(k)] = discard_answer[str(k)]
+out.write(json.dumps(answer))
+out.close()
+
+
+fp = open(intermediate_results, "w")
+fp.write("\n".join(log_list))
+fp.close()

@@ -15,7 +15,7 @@ input_output_pairs = [ (f"{main}/test1", f"{main}/cluster1.json", 10),
 result = []
 for dir, test, n_cluster in input_output_pairs:
     for i in range(5):
-        os.system(f"python bfr.py {dir} {n_cluster} output.json intermediate.csv")
+        os.system(f"python bfr_hb.py {dir} {n_cluster} output.json intermediate.csv")
         ground = get_list(test)
         our = get_list("output.json")
 
