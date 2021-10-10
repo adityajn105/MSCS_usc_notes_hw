@@ -1,10 +1,10 @@
---Create and use DataBase
---CREATE DATABASE db_hw2;
---USE db_hw2;
+-- DataBase USED: MySQL (Server version: 8.0.26)
 
---Question1).
+-- Create and use DataBase
+-- CREATE DATABASE db_hw2;
+-- USE db_hw2;
 
---Employee [contains info about employees]: ID, name, office number, floor number, phone number, email address etc.
+
 CREATE TABLE Employee (  
 	id INT(5) UNIQUE NOT NULL,  
 	name VARCHAR(40) NOT NULL,  
@@ -93,7 +93,7 @@ VALUES
 
 
 
--- > Notification [based on contact tracing, to alert employees who might have been exposed]: notification ID, employee ID, notification date, notification type (mandatory, optional)
+-- Notification [based on contact tracing, to alert employees who might have been exposed]: notification ID, employee ID, notification date, notification type (mandatory, optional)
 CREATE TABLE Notification (
 	notification_id INT NOT NULL,
 	employee_id INT(5) NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE Scan (
 	CONSTRAINT scan_time_ck CHECK (scan_time BETWEEN 0 AND 23),
 	PRIMARY KEY (scan_id),
 	FOREIGN KEY (employee_id) REFERENCES Employee(id)
-)
+);
 
 INSERT INTO Scan ( scan_id, scan_date, scan_time, employee_id, temperature )
 VALUES

@@ -1,24 +1,27 @@
--- Q4 The management would like stats, for a given period (between start, end dates), on the following: 
--- number of scans, number of tests, number of employees who self-reported symptoms, number of positive cases. Write queries to output these.
+-- DataBase USED: MySQL (Server version: 8.0.26)
+
+
+SET @START_DATE = '2021-10-03';
+SET @END_DATE = '2021-10-05';
 
 -- Number of scans: 
-SELECT COUNT(*) 
+SELECT COUNT(*) AS number_of_scans 
 FROM Scan 
-WHERE scan_date BETWEEN "2021-10-03" AND "2021-10-05";
+WHERE scan_date BETWEEN @START_DATE AND @END_DATE;
 
 
 -- Number of Tests
-SELECT COUNT(*) 
+SELECT COUNT(*) AS number_of_tests
 FROM Test 
-WHERE test_date BETWEEN "2021-10-03" AND "2021-10-05";
+WHERE test_date BETWEEN @START_DATE AND @END_DATE;
 
 
 -- Number of Employees who self-reported sysmptoms
-SELECT COUNT(DISTINCT employee_id) AS count 
+SELECT COUNT(DISTINCT employee_id) AS number_of_self_reports 
 FROM Symptom;
 
 
 -- Number of positive cases
-SELECT COUNT(*) 
+SELECT COUNT(*) AS number_of_positive_cases
 FROM Test 
 WHERE test_result = "positive";

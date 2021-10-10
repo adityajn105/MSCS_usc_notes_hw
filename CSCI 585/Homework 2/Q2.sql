@@ -1,4 +1,5 @@
---Q2 (1 point). Write a query to output the most-self-reported symptom.
+-- DataBase USED: MySQL (Server version: 8.0.26)
+
 
 -- FOR EACH symptom_id count how many type it appears in table then sort in descending order and Display first one.
 SELECT symptom_id 
