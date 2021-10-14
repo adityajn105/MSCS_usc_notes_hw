@@ -211,7 +211,7 @@ CREATE TABLE Scan (
 	scan_date Date NOT NULL,
 	scan_time INT(2) NOT NULL,
 	employee_id INT(5) NOT NULL,
-	temperature INT(2) NOT NULL,
+	temperature FLOAT NOT NULL,
 	CONSTRAINT scan_time_ck CHECK (scan_time BETWEEN 0 AND 23),
 	PRIMARY KEY (scan_id),
 	FOREIGN KEY (employee_id) REFERENCES Employee(id)

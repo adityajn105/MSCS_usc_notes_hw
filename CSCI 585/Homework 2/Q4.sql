@@ -18,10 +18,12 @@ WHERE test_date BETWEEN @START_DATE AND @END_DATE;
 
 -- Number of Employees who self-reported sysmptoms
 SELECT COUNT(DISTINCT employee_id) AS number_of_self_reports 
-FROM Symptom;
+FROM Symptom
+WHERE date_reported BETWEEN @START_DATE AND @END_DATE;
+
 
 
 -- Number of positive cases
 SELECT COUNT(*) AS number_of_positive_cases
 FROM Test 
-WHERE test_result = "positive";
+WHERE test_result = "positive" AND test_date BETWEEN @START_DATE AND @END_DATE;
