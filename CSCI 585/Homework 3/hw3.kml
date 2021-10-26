@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+<Document>
+<Style id="z1">
+<IconStyle><Icon><href>http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png</href></Icon></IconStyle>
+</Style>
+<Placemark><name>Parkside</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.290940,34.019003</coordinates></Point>
+</Placemark>
+<Placemark><name>Viterbi</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.289289,34.020408</coordinates></Point>
+</Placemark>
+<Placemark><name>Bookstore</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.286564,34.020883</coordinates></Point>
+</Placemark>
+<Placemark><name>TommyTrojan</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.285369,34.020575</coordinates></Point>
+</Placemark>
+<Placemark><name>Marshal School</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.283028,34.019122</coordinates></Point>
+</Placemark>
+<Placemark><name>Leavy Lib</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.283053,34.021603</coordinates></Point>
+</Placemark>
+<Placemark><name>Dohenny Lib</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.284095,34.020249</coordinates></Point>
+</Placemark>
+<Placemark><name>USC Religious</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.284955,34.023143</coordinates></Point>
+</Placemark>
+<Placemark><name>Pardee College</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.282654,34.020172</coordinates></Point>
+</Placemark>
+<Placemark><name>Jefferson Ent</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.283350,34.023199</coordinates></Point>
+</Placemark>
+<Placemark><name>USC Village</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.285164,34.025190</coordinates></Point>
+</Placemark>
+<Placemark><name>Taper Hall</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.284201,34.022172</coordinates></Point>
+</Placemark>
+<Placemark><name>Home</name>
+<styleUrl>#z1</styleUrl><Point><coordinates>-118.287106,34.032605</coordinates></Point>
+</Placemark>
+</Document></kml>
