@@ -1,0 +1,67 @@
+[
+ {
+   "name": "Parkside",
+   "popularity": 20,
+   "loc":[34.019003,-118.290940] 
+ },
+ {
+   "name": "Viterbi",
+   "popularity": 40,
+   "loc":[34.020408,-118.289289] 
+ },
+  {
+   "name": "Bookstore",
+   "popularity": 70,
+   "loc":[34.020883,-118.286564] 
+ },
+  {
+   "name": "TommyTrojan",
+   "popularity": 100,
+   "loc":[34.020575,-118.285369] 
+ },
+  {
+   "name": "Marshal School",
+   "popularity": 45,
+   "loc":[34.019122,-118.283028] 
+ },
+  {
+   "name": "Leavy Lib",
+   "popularity": 80,
+   "loc":[34.021603,-118.283053] 
+ },
+ {
+   "name": "Dohenny Lib",
+   "popularity": 70,
+   "loc":[34.020249,-118.284095] 
+ },
+  {
+   "name": "USC Religious",
+   "popularity": 25,
+   "loc":[34.023143,-118.284955] 
+ },
+  {
+   "name": "Lyon Center",
+   "popularity": 50,
+   "loc":[34.024106,-118.287993] 
+ },
+  {
+   "name": "Jefferson Ent",
+   "popularity": 90,
+   "loc":[34.023199,-118.283350] 
+ },
+ {
+   "name": "USC Village",
+   "popularity": 95,
+   "loc":[34.025190,-118.285164] 
+ },
+ {
+   "name": "Taper Hall",
+   "popularity": 35,
+   "loc":[34.022172,-118.284201] 
+ },
+  {
+   "name": "Home",
+   "popularity": 10,
+   "loc":[34.032605,-118.287106] 
+ }
+]
