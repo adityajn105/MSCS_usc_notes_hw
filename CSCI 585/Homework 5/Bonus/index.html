@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)https://bytes.usc.edu/cs585/f21_d-%2Da-%2Dta/hw/HW5/tfjs/run.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Object detection</title>
+    <script src="./Object detection_files/tfjs@1.0.1"> </script>
+    <script src="./Object detection_files/mobilenet@1.0.0"> </script>
+  </head>
+  <body data-new-gr-c-s-check-loaded="14.1040.0" data-gr-ext-installed="">
+    <!------------------------------------ -->
+    <img id="image" alt="cat" src="./Object detection_files/muffin_like_dog.png">
+    <!------------------------------------ -->
+
+    <script>
+      const img = document.getElementById('image');
+
+      const predictImage = async () => {
+        console.log("Model loading...");
+        const model = await mobilenet.load();
+        console.log("Model is loaded!")
+
+        const predictions = await model.classify(img);
+        //console.log('Predictions: ', predictions);
+        alert('Predictions: '+ JSON.stringify(predictions));
+      }
+      predictImage();
+    </script>
+  
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>
