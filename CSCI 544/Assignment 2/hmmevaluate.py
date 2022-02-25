@@ -1,5 +1,7 @@
 import sys
 
+#python hmmevaluate.py hmm-training-data/it_isdt_dev_tagged.txt
+#python hmmevaluate.py hmm-training-data/ja_gsd_dev_tagged.txt
 def get_all_tags(path):
     tags = []
     with open(path, "r") as fp:

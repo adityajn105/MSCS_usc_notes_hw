@@ -2,6 +2,8 @@ import sys
 import json
 from collections import defaultdict
 
+#python hmmlearn.py hmm-training-data/it_isdt_train_tagged.txt
+#python hmmlearn.py hmm-training-data/ja_gsd_train_tagged.txt
 def seperate_tag_word(word_tag):
     i = len(word_tag)-1
     while word_tag[i] != "/": i -= 1
@@ -13,13 +15,14 @@ def prepare_emission_vocab_taglist(sentences):
         for word_tag in sentence:
             word, tag = seperate_tag_word(word_tag)
             emission_list[tag].append(word)
+    emission_list["<END>"].append("<END>")
 
     sorted_tag_list = []
     vocabulary = set()
     emission_matrix = defaultdict(lambda: defaultdict(float))
     for tag, words in emission_list.items():
         v = 1/len(words)
-        sorted_tag_list.append( (v, tag) )
+        sorted_tag_list.append( (1/len(set(words)), tag) )
         for word in words:
             emission_matrix[tag][word] += v
             vocabulary.add(word)
@@ -35,9 +38,11 @@ def prepare_transition(sentences, sorted_tag_list):
             tag = seperate_tag_word(word_tag)[1]
             tag_list.append(tag)
         
-        transition_list[""].append( tag_list[0] )
+        transition_list["<START>"].append( tag_list[0] )
         for i in range(1,n):
             transition_list[ tag_list[i-1] ].append( tag_list[i] )
+        transition_list[ tag_list[n-1] ].append("<END>")
+        transition_list[ "<END>" ].append("<END>")
 
     transition_matrix = defaultdict(lambda: defaultdict(float))
     for prev_tag, tags in transition_list.items():
