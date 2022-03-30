@@ -1,0 +1,19 @@
+Complete this document and upload along with your prediction results and your code.
+
+### Method Name ###
+Use a phrasal name to describe your method, e.g. training a BiLSTM cross-encoder from scratch, fine-tuning RoBERTa-large-MNLI, etc.
+
+### Sentence pair encoder ###
+Use up to 5 sentences to describe your encoder for the sentence pairs. Need to mention the following:
+- Is it a bi-encoder or cross-encoder?
+- What type of encoder (LSTM, Transformer, etc.)
+- Is it based on a pre-trained model (BERT-large? RoBERTa-large-SNLI? BART-large-MNLI?) or completely trained from scratch by yourself (then how do you chracterize the words and aggregate them into sentence representations)?
+
+### Training & Development ###
+Up to 5 sentences: how did you evaluate your solution using the dev set before submitting to the leaderboard? What are some key hyperparameter values (e.g., optimizer, learning rate, batch size, etc.)? How did you terminate the training (using a fixed #epochs, early stopping based on dev set performance)?
+
+### Other methods ###
+Did you try other methods than the submitted one?
+
+### Packages ###
+List the key python packages you have used in this assignment.

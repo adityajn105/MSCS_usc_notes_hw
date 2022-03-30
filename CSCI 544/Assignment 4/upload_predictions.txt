@@ -1,0 +1,1 @@
+You will need to submit a prediction result file. It should have 4850 lines, every line should be either 0 or 1, which is your model's prediction on the respective test set instance.
