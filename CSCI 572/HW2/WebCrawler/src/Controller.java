@@ -54,9 +54,9 @@ public class Controller {
             out3.append(tasks[2]);
         }
 
-        writeCSV(out1, "fetch_nyt.csv");
-        writeCSV(out2, "visit_nyt.csv");
-        writeCSV(out3, "urls_nyt.csv");
+        writeCSV(out1, "fetch_nytimes.csv");
+        writeCSV(out2, "visit_nytimes.csv");
+        writeCSV(out3, "urls_nytimes.csv");
     }
 
     private static void writeCSV(StringBuilder output, String s) throws IOException {

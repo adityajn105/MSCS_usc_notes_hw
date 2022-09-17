@@ -1,14 +1,14 @@
 import http
 import pandas as pd
 
-with open("fetch_nyt.csv", "r", encoding="UTF-8") as f:
+with open("fetch_nytimes.csv", "r", encoding="UTF-8") as f:
     data = pd.read_csv(f, header=0)
     fetches_attempted = data.shape[0]
     fetches_succeeded = data[data["Status"] < 300].shape[0]
     fetches_failed = data[data["Status"] > 300].shape[0]
     status_codes = data.groupby(data["Status"]).count().to_dict()["URL"]
 
-with open("visit_nyt.csv", "r", encoding="UTF-8") as f:
+with open("visit_nytimes.csv", "r", encoding="UTF-8") as f:
     data = pd.read_csv(f, header=0)
     total_urls_extracted = data["Outgoing Links"].sum()
     less_1KB = data[data["Size"] < 1024].shape[0]
@@ -18,13 +18,13 @@ with open("visit_nyt.csv", "r", encoding="UTF-8") as f:
     greater_1mb = data[1024 * 1024 <= data["Size"]].shape[0]
     content_types = data.groupby(data["Content Type"]).count().to_dict()["URL"]
 
-with open("urls_nyt.csv", "r", encoding="UTF-8") as f:
+with open("urls_nytimes.csv", "r", encoding="UTF-8") as f:
     data = pd.read_csv(f, header=0)
     unique_extracted = data.shape[0]
     unique_within = data[data["Status"] == "OK"].shape[0]
     unique_outside = data[data["Status"] == "N_OK"].shape[0]
 
-with open("CrawlReport_nyt.txt", "w") as f:
+with open("CrawlReport_nytimes.txt", "w") as f:
     f.write(f"Name: Aditya Jain\n")
     f.write(f"USC ID: 9201384518\n")
     f.write(f"News site crawled: nytimes.com\n")
