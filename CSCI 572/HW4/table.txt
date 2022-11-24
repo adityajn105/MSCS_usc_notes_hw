@@ -1,0 +1,180 @@
+Cannes, lucene, https://www.nytimes.com/2019/05/25/movies/cannes-film-festival-winners-parasite.html
+Cannes, lucene, https://www.nytimes.com/2019/05/25/movies/cannes-film-festival-winners-parasite.html
+Cannes, lucene, https://www.nytimes.com/2018/04/12/movies/cannes-lineup-netflix-boycott.html
+Cannes, lucene, https://www.nytimes.com/2019/05/24/movies/cannes-almodovar-kechiche.html
+Cannes, lucene, https://www.nytimes.com/2019/05/16/movies/cannes-film-festival-jim-jarmusch.html
+Cannes, lucene, https://www.nytimes.com/2019/05/21/movies/cannes-film-festival-antonio-banderas-pedro-almodovar.html
+Cannes, lucene, https://www.nytimes.com/2019/05/27/movies/cannes-oscars.html
+Cannes, lucene, https://www.nytimes.com/2019/05/20/arts/cannes-film-festival-black-director.html
+Cannes, lucene, https://www.nytimes.com/2019/05/22/movies/quentin-tarantino-margot-robbie.html
+Cannes, lucene, https://www.nytimes.com/2019/05/22/movies/dicaprio-pitt.html
+Cannes, pagerank, https://www.nytimes.com/interactive/2019/10/15/t-magazine/nick-cave-artist.html
+Cannes, pagerank, https://www.nytimes.com/interactive/2019/10/15/t-magazine/rachel-weisz-acting-movies.html
+Cannes, pagerank, https://www.nytimes.com/interactive/2019/10/15/t-magazine/nicolas-ghesquiere-louis-vuitton.html
+Cannes, pagerank, https://www.nytimes.com/interactive/2019/10/15/t-magazine/the-greats.html
+Cannes, pagerank, https://www.nytimes.com/interactive/2019/10/15/t-magazine/shigeru-ban.html
+Cannes, pagerank, https://www.nytimes.com/2017/10/05/us/harvey-weinstein-harassment-allegations.html
+Cannes, pagerank, https://www.nytimes.com/2019/09/06/movies/fall-movies.html
+Cannes, pagerank, https://www.nytimes.com/2019/09/06/movies/fall-movies.html
+Cannes, pagerank, https://www.nytimes.com/news-event/awards-season
+Cannes, pagerank, https://www.nytimes.com/2017/10/05/us/harvey-weinstein-harassment-allegations.html
+Congress, lucene, https://www.nytimes.com/interactive/2019/us/politics/trump-impeachment-congress-list.html
+Congress, lucene, https://www.nytimes.com/2019/11/05/magazine/congress-president-impeachment.html
+Congress, lucene, https://www.nytimes.com/2019/11/05/magazine/congress-president-impeachment.html
+Congress, lucene, https://www.nytimes.com/2019/07/25/us/politics/mueller-impeachment.html
+Congress, lucene, https://www.nytimes.com/2019/07/26/us/politics/donald-trump-impeachment.html
+Congress, lucene, https://www.nytimes.com/2019/09/07/us/politics/congress-assault-weapons-ban.html
+Congress, lucene, https://www.nytimes.com/2018/11/21/obituaries/james-billington-dead.html
+Congress, lucene, https://www.nytimes.com/2018/09/17/us/politics/bloomberg-president-2020-democrat.html
+Congress, lucene, https://www.nytimes.com/2019/08/07/us/politics/foreign-aid-freeze-congress.html
+Congress, lucene, https://www.nytimes.com/2018/07/30/obituaries/ron-dellums-forceful-liberal-in-congress-for-27-years-dies-at-82.html
+Congress, pagerank, https://www.nytimes.com
+Congress, pagerank, https://www.nytimes.com/section/magazine
+Congress, pagerank, https://www.nytimes.com/section/t-magazine
+Congress, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Congress, pagerank, https://www.nytimes.com/section/jobs
+Congress, pagerank, https://www.nytimes.com/video/us/politics/100000006067682/president-trump-impeach-questions-answers-michael-cohen.html
+Congress, pagerank, https://www.nytimes.com/video/us/politics/100000005524412/paul-manafort-fraud-laundering-scandal.html
+Congress, pagerank, https://www.nytimes.com/interactive/2018/obituaries/notable-deaths.html
+Congress, pagerank, https://www.nytimes.com/video/us/politics/100000006639814/presidential-candidates-campaigns.html
+Congress, pagerank, https://www.nytimes.com/video/us/politics/100000006812398/warren-bill-gates.html
+Democrats, lucene, https://www.nytimes.com/2018/09/04/us/politics/ayanna-pressley-massachusetts.html
+Democrats, lucene, https://www.nytimes.com/2018/11/07/us/politics/election-history-firsts-blackburn-pressley.html
+Democrats, lucene, https://www.nytimes.com/2019/10/16/us/politics/democrats-impeachment.html
+Democrats, lucene, https://www.nytimes.com/2019/09/29/us/politics/pelosi-trump-impeachment.html
+Democrats, lucene, https://www.nytimes.com/2018/01/23/us/politics/impeach-trump-democrats-tom-steyer.html
+Democrats, lucene, https://www.nytimes.com/2019/09/24/us/politics/trump-democrats.html
+Democrats, lucene, https://www.nytimes.com/2019/10/28/us/politics/trump-impeachment-subpoena-house.html
+Democrats, lucene, https://www.nytimes.com/2019/11/05/opinion/trump-democrats-2020.html
+Democrats, lucene, https://www.nytimes.com/2019/11/01/us/politics/house-republican-box-prank.html
+Democrats, lucene, https://www.nytimes.com/issue/magazine/2019/06/25/the-61619-issue
+Democrats, pagerank, https://www.nytimes.com/video
+Democrats, pagerank, https://www.nytimes.com
+Democrats, pagerank, https://www.nytimes.com/section/magazine
+Democrats, pagerank, https://www.nytimes.com/section/politics
+Democrats, pagerank, https://www.nytimes.com/section/us
+Democrats, pagerank, https://www.nytimes.com/section/opinion
+Democrats, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Democrats, pagerank, https://www.nytimes.com/section/opinion/columnists
+Democrats, pagerank, https://www.nytimes.com/section/upshot
+Democrats, pagerank, https://www.nytimes.com/news-event/2020-election
+Patriot Movement, lucene, https://www.nytimes.com/2019/08/14/opinion/joe-walsh-trump-primary.html
+Patriot Movement, lucene, https://www.nytimes.com/1976/08/27/archives/lewis-michaux-92-dies-ran-bookstore-in-harlem.html
+Patriot Movement, lucene, https://www.nytimes.com/2019/05/15/us/politics/us-iraq-embassy-evacuation.html
+Patriot Movement, lucene, https://www.nytimes.com/2019/01/07/obituaries/moshe-arens-dead.html
+Patriot Movement, lucene, https://www.nytimes.com/2019/10/27/obituaries/john-conyers-jr-dead.html
+Patriot Movement, lucene, https://www.nytimes.com/2018/12/29/obituaries/shehu-shagari-dead.html
+Patriot Movement, lucene, https://www.nytimes.com/2019/09/23/opinion/democrats-republicans.html
+Patriot Movement, lucene, https://www.nytimes.com/2018/09/04/us/politics/ayanna-pressley-massachusetts.html
+Patriot Movement, lucene, https://www.nytimes.com/interactive/2018/10/31/magazine/yemen-war-saudi-arabia.html
+Patriot Movement, lucene, https://www.nytimes.com/2019/08/15/t-magazine/tropical-brutalism.html
+Patriot Movement, pagerank, https://www.nytimes.com/video
+Patriot Movement, pagerank, https://www.nytimes.com
+Patriot Movement, pagerank, https://www.nytimes.com/video/opinion
+Patriot Movement, pagerank, https://www.nytimes.com/section/t-magazine
+Patriot Movement, pagerank, https://www.nytimes.com/section/opinion
+Patriot Movement, pagerank, https://www.nytimes.com/section/technology
+Patriot Movement, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Patriot Movement, pagerank, https://www.nytimes.com/section/lens
+Patriot Movement, pagerank, https://www.nytimes.com/interactive/2018/obituaries/notable-deaths.html
+Patriot Movement, pagerank, https://www.nytimes.com/interactive/2019/obituaries/notable-deaths.html
+Republicans, lucene, https://www.nytimes.com/2019/10/24/us/politics/senate-republicans-trump.html
+Republicans, lucene, https://www.nytimes.com/2019/11/04/us/politics/trump-republicans-impeachment.html
+Republicans, lucene, https://www.nytimes.com/2019/11/04/us/politics/trump-republicans-impeachment.html
+Republicans, lucene, https://www.nytimes.com/by/catie-edmondson
+Republicans, lucene, https://www.nytimes.com/interactive/2019/08/14/magazine/republicans-racism-african-americans.html
+Republicans, lucene, https://www.nytimes.com/2019/10/04/us/politics/republicans-trump-defense.html
+Republicans, lucene, https://www.nytimes.com/2019/10/31/us/politics/house-impeachment-partisan-vote.html
+Republicans, lucene, https://www.nytimes.com/2019/11/09/us/politics/republican-strategy-impeachment-trump.html
+Republicans, lucene, https://www.nytimes.com/2019/11/06/us/trump-senate-republicans-courts.html
+Republicans, lucene, https://www.nytimes.com/2019/11/06/us/trump-senate-republicans-courts.html
+Republicans, pagerank, https://www.nytimes.com
+Republicans, pagerank, https://www.nytimes.com/section/politics
+Republicans, pagerank, https://www.nytimes.com/section/us
+Republicans, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Republicans, pagerank, https://www.nytimes.com/section/upshot
+Republicans, pagerank, https://www.nytimes.com/news-event/2020-election
+Republicans, pagerank, https://www.nytimes.com/video/us/politics/100000006067682/president-trump-impeach-questions-answers-michael-cohen.html
+Republicans, pagerank, https://www.nytimes.com/video/us/elections/100000006810114/kentucky-election-bevin-beshear.html
+Republicans, pagerank, https://www.nytimes.com/video/us/politics/100000006812485/hillary-clinton-medicare.html
+Republicans, pagerank, https://www.nytimes.com/video/election-2016
+Senate, lucene, https://www.nytimes.com/2019/10/01/us/politics/senate-trump-impeachment.html
+Senate, lucene, https://www.nytimes.com/by/carl-hulse
+Senate, lucene, https://www.nytimes.com/2019/10/26/us/trump-senate-presidency.html
+Senate, lucene, https://www.nytimes.com/2019/10/24/us/politics/senate-republicans-trump.html
+Senate, lucene, https://www.nytimes.com/2019/11/08/us/impeachment-senate-democrats.html
+Senate, lucene, https://www.nytimes.com/2019/08/03/us/politics/senate-votes-mcconnell.html
+Senate, lucene, https://www.nytimes.com/2019/08/31/us/politics/senate-race-2020.html
+Senate, lucene, https://www.nytimes.com/2019/08/22/us/politics/john-hickenlooper-senate-2020.html
+Senate, lucene, https://www.nytimes.com/2019/10/18/us/politics/mcconnell-impeachment-senate.html
+Senate, lucene, https://www.nytimes.com/2019/11/06/us/trump-senate-republicans-courts.html
+Senate, pagerank, https://www.nytimes.com/section/us
+Senate, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Senate, pagerank, https://www.nytimes.com/section/climate
+Senate, pagerank, https://www.nytimes.com/news-event/2020-election
+Senate, pagerank, https://www.nytimes.com/video/opinion/100000006064751/coal-miner-to-trump-coal-mining-isnt-coming-back.html
+Senate, pagerank, https://timesjourneys.nytimes.com/tour-type/
+Senate, pagerank, https://www.nytimes.com/times-journeys/tour-type/small-group/
+Senate, pagerank, https://www.nytimes.com/times-journeys/trip-type/politics-and-perspective/
+Senate, pagerank, https://www.nytimes.com/video/us/politics/100000006639814/presidential-candidates-campaigns.html
+Senate, pagerank, https://www.nytimes.com/video/us/politics/100000006812485/hillary-clinton-medicare.html
+Olympics 2020, lucene, https://www.nytimes.com/2019/10/01/travel/what-you-need-to-know-the-tokyo-2020-olympics.html
+Olympics 2020, lucene, https://www.nytimes.com/2018/02/15/learning/should-technology-in-sports-be-limited.html
+Olympics 2020, lucene, https://www.nytimes.com/2018/02/15/learning/should-technology-in-sports-be-limited.html
+Olympics 2020, lucene, https://www.nytimes.com/2017/12/05/sports/olympics/ioc-russia-winter-olympics.html
+Olympics 2020, lucene, https://www.nytimes.com/2018/04/23/sports/breakdancing-olympics.html
+Olympics 2020, lucene, https://www.nytimes.com/2016/08/02/sports/olympics/rare-show-of-discord-between-ioc-and-world-anti-doping-agency-over-russian-scandal.html
+Olympics 2020, lucene, https://www.nytimes.com/2019/09/23/sports/olympics/russia-doping-wada.html
+Olympics 2020, lucene, https://www.nytimes.com/video/sports/olympics/100000005750317/johnny-weir-tara-lipinski-figure-skating.html
+Olympics 2020, lucene, https://www.nytimes.com/video/sports/olympics/100000005750317/johnny-weir-tara-lipinski-figure-skating.html
+Olympics 2020, lucene, https://www.nytimes.com/video/sports/olympics/100000005752444/south-korea-speedskaters.html
+Olympics 2020, pagerank, https://www.nytimes.com/video
+Olympics 2020, pagerank, https://www.nytimes.com
+Olympics 2020, pagerank, https://www.nytimes.com/section/magazine
+Olympics 2020, pagerank, https://www.nytimes.com/section/obituaries
+Olympics 2020, pagerank, https://www.nytimes.com/section/politics
+Olympics 2020, pagerank, https://www.nytimes.com/section/realestate
+Olympics 2020, pagerank, https://www.nytimes.com/section/us
+Olympics 2020, pagerank, https://www.nytimes.com/section/movies
+Olympics 2020, pagerank, https://www.nytimes.com/video/opinion
+Olympics 2020, pagerank, https://www.nytimes.com/section/arts/television
+Stock, lucene, https://www.nytimes.com/interactive/2017/10/04/us/bump-stock-las-vegas-gun.html
+Stock, lucene, https://www.nytimes.com/2019/05/02/business/tesla-stock-fundraising.html
+Stock, lucene, https://www.nytimes.com/2018/12/16/technology/tech-workers-company-stock-shareholder-activism.html
+Stock, lucene, https://www.nytimes.com/2019/05/10/technology/uber-stock-price-ipo.html
+Stock, lucene, https://www.nytimes.com/2019/11/04/business/under-armour-stock-investigation.html
+Stock, lucene, https://www.nytimes.com/2019/10/24/style/rebag-clair-handbag-stock-market.html
+Stock, lucene, https://www.nytimes.com/2019/05/30/technology/uber-stock-earnings.html
+Stock, lucene, https://www.nytimes.com/2019/09/20/technology/airbnb-employees-ipo-payouts.html
+Stock, lucene, https://www.nytimes.com/2018/11/12/obituaries/david-pearson-nascar-dead.html
+Stock, lucene, https://www.nytimes.com/2019/10/28/business/stock-market-record.html
+Stock, pagerank, https://www.nytimes.com/section/world
+Stock, pagerank, https://www.nytimes.com/section/business
+Stock, pagerank, https://www.nytimes.com/issue/todayspaper/2019/11/10/todays-new-york-times
+Stock, pagerank, https://www.nytimes.com/section/automobiles
+Stock, pagerank, https://www.nytimes.com/section/upshot
+Stock, pagerank, https://www.nytimes.com/section/fashion
+Stock, pagerank, https://www.nytimes.com/section/world/middleeast
+Stock, pagerank, https://www.nytimes.com/video/opinion/100000006616246/the-king-of-fish-and-chips.html
+Stock, pagerank, https://www.nytimes.com/by/vanessa-friedman
+Stock, pagerank, https://www.nytimes.com/section/business/media
+Virus, lucene, https://www.nytimes.com/2019/11/09/science/seals-distemper.html
+Virus, lucene, https://www.nytimes.com/2019/10/25/health/predict-usaid-viruses.html
+Virus, lucene, https://www.nytimes.com/2019/10/28/us/politics/kay-hagan-dead.html
+Virus, lucene, https://www.nytimes.com/2019/02/05/us/politics/trump-hiv-aids-plan.html
+Virus, lucene, https://www.nytimes.com/by/donald-g-mcneil-jr
+Virus, lucene, https://www.nytimes.com/2019/09/27/well/live/when-is-the-best-time-to-get-your-flu-shot.html
+Virus, lucene, https://www.nytimes.com/video/opinion/100000006210828/russia-disinformation-fake-news.html
+Virus, lucene, https://www.nytimes.com/video/opinion/100000006210828/russia-disinformation-fake-news.html
+Virus, lucene, https://www.nytimes.com/2019/01/23/neediest-cases/daughter-cmv.html
+Virus, lucene, https://www.nytimes.com/by/tariro-mzezewa
+Virus, pagerank, https://www.nytimes.com/section/us
+Virus, pagerank, https://www.nytimes.com/section/world
+Virus, pagerank, https://www.nytimes.com/section/science
+Virus, pagerank, https://www.nytimes.com/section/health
+Virus, pagerank, https://www.nytimes.com/es/
+Virus, pagerank, https://www.nytimes.com/section/climate
+Virus, pagerank, https://www.nytimes.com/2019/07/15/t-magazine/most-important-contemporary-art.html
+Virus, pagerank, https://www.nytimes.com/2019/07/15/t-magazine/most-important-contemporary-art.html
+Virus, pagerank, https://www.nytimes.com/2019/09/03/t-magazine/walter-van-beirendonck.html
+Virus, pagerank, https://www.nytimes.com/section/well

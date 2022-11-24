@@ -14,9 +14,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-public class BigramsInvertedIndexJob {
+public class InvertedIndexBigrams {
 
-    public static class BigramsInvertedIndexMapper extends Mapper<Object, Text, Text, Text> {
+    public static class InvertedIndexBigramsMapper extends Mapper<Object, Text, Text, Text> {
 
         private final Text bigram = new Text();
         private final Text documentId = new Text();
@@ -51,7 +51,7 @@ public class BigramsInvertedIndexJob {
         }
     }
 
-    public static class BigramsInvertedIndexReducer extends Reducer<Text, Text, Text, Text> {
+    public static class InvertedIndexBigramsReducer extends Reducer<Text, Text, Text, Text> {
 
         @Override
         public void reduce(Text bigram, Iterable<Text> docIds, Context context) throws IOException, InterruptedException {
@@ -86,9 +86,9 @@ public class BigramsInvertedIndexJob {
 
         Configuration conf = new Configuration();
         Job job = Job.getInstance(conf, "Bigrams Inverted Index");
-        job.setJarByClass(BigramsInvertedIndexJob.class);
-        job.setMapperClass(BigramsInvertedIndexMapper.class);
-        job.setReducerClass(BigramsInvertedIndexReducer.class);
+        job.setJarByClass(InvertedIndexBigrams.class);
+        job.setMapperClass(InvertedIndexBigramsMapper.class);
+        job.setReducerClass(InvertedIndexBigramsReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 

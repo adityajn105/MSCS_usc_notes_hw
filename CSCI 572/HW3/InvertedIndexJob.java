@@ -18,13 +18,6 @@ public class InvertedIndexJob {
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] document = value.toString().split("\t", 2);
-
-            /*
-            Before tokenization,
-            1. Convert text to lower case
-            2. Convert non-alphabet characters to space character
-            3. Convert multiple instances of space characters into one space character
-             */
             String text = document[1].toLowerCase();
             text = text.replaceAll("[^a-z\\s]", " ");
             text = text.replaceAll("\\s+", " ");
